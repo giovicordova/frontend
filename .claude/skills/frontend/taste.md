@@ -1,7 +1,7 @@
 ---
 name: taste
 domain: frontend
-last_updated: 2026-02-22
+last_updated:
 pinterest_url: https://nl.pinterest.com/cordovagiova/
 portfolio_url: https://giovannicordova.com/
 ---

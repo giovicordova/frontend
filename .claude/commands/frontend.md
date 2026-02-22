@@ -70,8 +70,8 @@ This is the parallel audit orchestration mode. It runs in the main context (not 
    | File content | Skills to audit |
    |---|---|
    | Page/route with multiple sections | visual-design, ux-ia, layout-responsive, accessibility, content-microcopy, interaction-motion |
-   | Single UI component | visual-design, component-architecture, accessibility, content-microcopy |
-   | Form or data entry | forms-data, accessibility, visual-design, layout-responsive |
+   | Single UI component | visual-design, component-architecture, accessibility, content-microcopy, interaction-motion |
+   | Form or data entry | forms-data, accessibility, visual-design, layout-responsive, content-microcopy |
    | Animation/transition heavy | interaction-motion, accessibility |
    | Navigation/routing component | ux-ia, layout-responsive, accessibility |
    | Design system tokens/theme | component-architecture, visual-design |
@@ -175,13 +175,13 @@ Create an agent team called `frontend-review-fix-{name}` and spawn two teammates
 > Create an agent team called "frontend-review-fix-{name}".
 >
 > Spawn two teammates:
-> - **auditor** (sonnet model): Read-only code reviewer. Read all applicable skill files from `.claude/skills/frontend/`. Evaluate {files} against every checklist. Write structured findings (Critical/Important/Nice-to-have with file:line evidence) to `.frontend-specs/{name}-audit.md`. Message fixer when done.
+> - **auditor** (sonnet model): Read-only code reviewer. Read `.claude/agents/frontend-auditor.md` for your full role definition and required output format. Read all applicable skill files from `.claude/skills/frontend/`. Evaluate {files} against every checklist. Write structured findings (Critical/Important/Nice-to-have with file:line evidence) to `.frontend-specs/{name}-audit.md`. Message fixer when done.
 > - **fixer** (opus model): Frontend implementer. Read the team brief at `.frontend-specs/{name}-team-brief.md` for stack/conventions context. When audit findings are ready, read `.frontend-specs/{name}-audit.md` and fix all Critical and Important items (or Critical only, per severity threshold). Write a summary of changes to `.frontend-specs/{name}-fixes.md`. Message auditor when done.
 >
 > Task plan:
 > 1. "Audit {files} against {skill domains}" — auditor, no dependencies
 > 2. "Fix Critical and Important findings" — fixer, blocked by task 1
-> 3. "Validate fixes against original findings" — auditor, blocked by task 2
+> 3. "Validate fixes against original findings" — auditor, blocked by task 2. Write results to `.frontend-specs/{name}-validation.md`.
 > 4. "Synthesize final review report" — lead, blocked by task 3
 >
 > Do NOT implement fixes yourself. Wait for all teammates to complete. Then synthesize: combine audit findings, fixes applied, and validation results into `.frontend-specs/{name}-review.md`.
@@ -234,5 +234,6 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 - Refresh interval: 30 days
 - Force refresh: `/frontend refresh`
 - Agent teams env: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
-- Team hooks: `.claude/hooks/frontend-team-{task,idle}-gate.js`
+- Quality gate: `.claude/hooks/frontend-quality-gate.cjs`
+- Team hooks: `.claude/hooks/frontend-team-{task,idle}-gate.cjs`
 </quick_reference>

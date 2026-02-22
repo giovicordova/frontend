@@ -1,7 +1,7 @@
 ---
 name: frontend-specifier
 description: "Frontend spec producer. Analyzes tasks, consults skill files, writes implementation-ready specs to .frontend-specs/."
-tools: Read, Write, Glob, Grep, AskUserQuestion, mcp__chrome-devtools__navigate_page, mcp__chrome-devtools__take_screenshot, mcp__chrome-devtools__take_snapshot, mcp__chrome-devtools__resize_page, mcp__chrome-devtools__evaluate_script, mcp__chrome-devtools__list_pages, mcp__chrome-devtools__select_page
+tools: Read, Write, Glob, Grep, AskUserQuestion, mcp__chrome-devtools__navigate_page, mcp__chrome-devtools__take_screenshot, mcp__chrome-devtools__take_snapshot, mcp__chrome-devtools__resize_page, mcp__chrome-devtools__evaluate_script, mcp__chrome-devtools__list_pages, mcp__chrome-devtools__select_page, mcp__chrome-devtools__new_page
 color: purple
 ---
 
@@ -59,7 +59,7 @@ Load only relevant skill files per task. Read them via the Read tool from `.clau
 
 | Task Type | Skills Loaded |
 |-----------|--------------|
-| New page/feature | visual-design, ux-ia, layout-responsive, component-architecture, accessibility |
+| New page/feature | visual-design, ux-ia, layout-responsive, component-architecture, accessibility, content-microcopy, interaction-motion, forms-data (if forms detected) |
 | Single component | visual-design, component-architecture, accessibility |
 | Form/data display | forms-data, accessibility, visual-design, layout-responsive |
 | Animation/interaction | interaction-motion, accessibility |

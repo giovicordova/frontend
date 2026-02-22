@@ -51,9 +51,39 @@ if (/\baudit\b/.test(subject) || /\bvalidate\b/.test(subject)) {
     process.exit(2);
   }
 
-  // Look for any file with structured severity headings
+  // Extract {name} from team_name (strip "frontend-review-fix-" prefix)
+  const teamPrefix = "frontend-review-fix-";
+  const name = team_name.startsWith(teamPrefix)
+    ? team_name.slice(teamPrefix.length)
+    : "";
+
+  // Validate tasks must produce {name}-validation.md specifically
+  if (/\bvalidate\b/.test(subject) && name) {
+    const validationFile = path.join(specsDir, `${name}-validation.md`);
+    if (!fs.existsSync(validationFile)) {
+      process.stderr.write(
+        `BLOCKED: Validation file ${name}-validation.md not found in .frontend-specs/. Write validation results before completing.\n`
+      );
+      process.exit(2);
+    }
+    const content = fs.readFileSync(validationFile, "utf8");
+    if (!/^#{2,3} Critical/m.test(content) && !/^#{2,3} Important/m.test(content)) {
+      process.stderr.write(
+        `BLOCKED: ${name}-validation.md missing ## Critical / ## Important structure. Write structured validation results.\n`
+      );
+      process.exit(2);
+    }
+    process.exit(0);
+  }
+
+  // Audit tasks: check for {name}-audit.md if name available, else any structured findings
+  const targetFile = name ? `${name}-audit.md` : null;
   const files = fs.readdirSync(specsDir).filter((f) => f.endsWith(".md"));
-  const hasStructuredFindings = files.some((f) => {
+  const filesToCheck = targetFile
+    ? files.filter((f) => f === targetFile)
+    : files;
+
+  const hasStructuredFindings = filesToCheck.some((f) => {
     try {
       const content = fs.readFileSync(path.join(specsDir, f), "utf8");
       return /^#{2,3} Critical/m.test(content) || /^#{2,3} Important/m.test(content);
@@ -63,8 +93,9 @@ if (/\baudit\b/.test(subject) || /\bvalidate\b/.test(subject)) {
   });
 
   if (!hasStructuredFindings) {
+    const expected = targetFile || "any .md file";
     process.stderr.write(
-      `BLOCKED: No findings file with ## Critical / ## Important structure found in .frontend-specs/. Write audit findings before completing.\n`
+      `BLOCKED: No findings with ## Critical / ## Important structure found in ${expected}. Write audit findings before completing.\n`
     );
     process.exit(2);
   }
@@ -92,7 +123,9 @@ if (/\bfix\b/.test(subject)) {
     try {
       execSync("npm run lint", { cwd: projectRoot, stdio: "pipe", timeout: 60000 });
     } catch (e) {
-      errors.push(`Lint failed:\n${e.stderr?.toString() || e.message}`);
+      const stderr = e.stderr?.toString() || "";
+      const stdout = e.stdout?.toString() || "";
+      errors.push(`Lint failed:\n${stderr || stdout || e.message}`);
     }
   }
 

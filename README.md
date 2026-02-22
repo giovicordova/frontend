@@ -61,9 +61,9 @@ Domain checklists that auditors evaluate code against:
 
 | Hook | Trigger | Behavior |
 |------|---------|----------|
-| `frontend-quality-gate.js` | `PostToolUse` (Write/Edit) | Warns on common a11y and performance violations in frontend files |
-| `frontend-team-idle-gate.js` | `TeammateIdle` | Blocks teammates from idling while tasks remain |
-| `frontend-team-task-gate.js` | `TaskCompleted` | Blocks audit completion without findings; blocks fix completion if lint/types fail |
+| `frontend-quality-gate.cjs` | `PostToolUse` (Write/Edit) | Warns on common a11y and performance violations in frontend files |
+| `frontend-team-idle-gate.cjs` | `TeammateIdle` | Blocks teammates from idling while tasks remain |
+| `frontend-team-task-gate.cjs` | `TaskCompleted` | Blocks audit completion without findings; blocks fix completion if lint/types fail |
 
 ### Command (`.claude/commands/frontend.md`)
 

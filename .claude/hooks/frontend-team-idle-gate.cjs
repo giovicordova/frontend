@@ -14,6 +14,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
 let input;
 try {
@@ -32,7 +33,7 @@ if (!team_name.startsWith("frontend-review-fix")) {
 // Try to read task state — fail open on any error
 try {
   const tasksDir = path.join(
-    process.env.HOME || "~",
+    os.homedir(),
     ".claude",
     "tasks",
     team_name
@@ -67,7 +68,7 @@ try {
   );
 
   if (ownInProgress.length > 0) {
-    const subjects = ownInProgress.map((t) => t.subject).join(", ");
+    const subjects = ownInProgress.map((t) => t.subject || t.id || "unnamed task").join(", ");
     process.stderr.write(
       `BLOCKED: You have in-progress tasks: ${subjects}. Complete them before going idle.\n`
     );
@@ -88,7 +89,7 @@ try {
   });
 
   if (unclaimed.length > 0) {
-    const subjects = unclaimed.map((t) => t.subject).join(", ");
+    const subjects = unclaimed.map((t) => t.subject || t.id || "unnamed task").join(", ");
     process.stderr.write(
       `BLOCKED: Unclaimed tasks available: ${subjects}. Pick one up before going idle.\n`
     );

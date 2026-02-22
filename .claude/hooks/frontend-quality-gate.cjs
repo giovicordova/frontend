@@ -74,7 +74,7 @@ if (/outline:\s*none/i.test(content) || /outline:\s*0\b/i.test(content)) {
 const imgTagRegex = /<(?:img|Image)\b[^>]*>/gi;
 const imgTags = content.match(imgTagRegex) || [];
 for (const tag of imgTags) {
-  if (!/\balt\s*[={]/i.test(tag)) {
+  if (!/\balt\s*[={]/i.test(tag) && !/\{\s*\.\.\./.test(tag)) {
     const tagName = tag.match(/<(\w+)/)?.[1] || "img";
     warnings.push(
       `<${tagName}> without alt attribute — screen readers cannot describe this image`
@@ -84,11 +84,11 @@ for (const tag of imgTags) {
 }
 
 // Check: onClick on non-interactive elements without role
-const onClickRegex = /<(div|span|p|section|article|header|footer|main|li|ul)\b[^>]*onClick/gi;
-const clickMatches = content.match(onClickRegex) || [];
-for (const match of clickMatches) {
-  if (!/\brole\s*[={]/i.test(match)) {
-    const element = match.match(/<(\w+)/)?.[1] || "element";
+const fullTagRegex = /<(div|span|p|section|article|header|footer|main|li|ul)\b[^>]*>/gi;
+const fullTags = content.match(fullTagRegex) || [];
+for (const tag of fullTags) {
+  if (/onClick/i.test(tag) && !/\brole\s*[={]/i.test(tag)) {
+    const element = tag.match(/<(\w+)/)?.[1] || "element";
     warnings.push(
       `onClick on <${element}> without role attribute — use a <button> or add role="button" with tabIndex={0} and keyboard handlers`
     );
@@ -125,10 +125,11 @@ for (const tag of imgTags) {
   }
 }
 
-// Check: aria-hidden="true" on containers with potentially focusable children
-if (/aria-hidden\s*=\s*["'{]?\s*true/i.test(content)) {
+// Check: aria-hidden="true" on container elements (skip decorative elements like SVG icons)
+const containerAriaHidden = /<(div|section|main|aside|nav|article|header|footer)\b[^>]*aria-hidden\s*=\s*["'{]?\s*true/gi;
+if (containerAriaHidden.test(content)) {
   warnings.push(
-    `aria-hidden="true" detected — if this container has focusable children (links, buttons, inputs), they become inaccessible to screen readers`
+    `aria-hidden="true" on container element — if it has focusable children (links, buttons, inputs), they become inaccessible to screen readers`
   );
 }
 
