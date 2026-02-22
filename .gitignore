@@ -1,0 +1,6 @@
+.DS_Store
+.frontend-specs/
+node_modules/
+typography/
+ui/
+research/
