@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/frontend-quality-gate.js"
+            "command": "node .claude/hooks/frontend-quality-gate.cjs"
           }
         ]
       }
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/frontend-team-idle-gate.js"
+            "command": "node .claude/hooks/frontend-team-idle-gate.cjs"
           }
         ]
       }
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/frontend-team-task-gate.js"
+            "command": "node .claude/hooks/frontend-team-task-gate.cjs"
           }
         ]
       }

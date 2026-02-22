@@ -8,7 +8,12 @@
 
 const fs = require("fs");
 
-const input = JSON.parse(fs.readFileSync("/dev/stdin", "utf8"));
+let input;
+try {
+  input = JSON.parse(fs.readFileSync("/dev/stdin", "utf8"));
+} catch {
+  process.exit(0);
+}
 const toolName = input.tool_name;
 const toolInput = input.tool_input;
 

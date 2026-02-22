@@ -30,7 +30,7 @@ if (!team_name.includes("frontend")) {
 const subject = task_subject.toLowerCase();
 
 // --- Audit / Validate tasks: require structured findings file ---
-if (subject.includes("audit") || subject.includes("validate")) {
+if (/\baudit\b/.test(subject) || /\bvalidate\b/.test(subject)) {
   const specsDir = path.join(cwd, ".frontend-specs");
 
   if (!fs.existsSync(specsDir)) {
@@ -45,7 +45,7 @@ if (subject.includes("audit") || subject.includes("validate")) {
   const hasStructuredFindings = files.some((f) => {
     try {
       const content = fs.readFileSync(path.join(specsDir, f), "utf8");
-      return /^## Critical/m.test(content) || /^## Important/m.test(content);
+      return /^#{2,3} Critical/m.test(content) || /^#{2,3} Important/m.test(content);
     } catch {
       return false;
     }
@@ -62,7 +62,7 @@ if (subject.includes("audit") || subject.includes("validate")) {
 }
 
 // --- Fix tasks: require lint + type-check to pass ---
-if (subject.includes("fix")) {
+if (/\bfix\b/.test(subject)) {
   let pkgJson;
   try {
     pkgJson = JSON.parse(
@@ -86,13 +86,7 @@ if (subject.includes("fix")) {
   }
 
   // Run type-check if available
-  const hasTsc =
-    scripts["type-check"] || scripts["typecheck"] || scripts["types"];
-  const tscScript = hasTsc
-    ? Object.keys(scripts).find((k) =>
-        ["type-check", "typecheck", "types"].includes(k)
-      )
-    : null;
+  const tscScript = ["type-check", "typecheck", "types"].find((k) => k in scripts);
 
   if (tscScript) {
     try {
@@ -102,17 +96,20 @@ if (subject.includes("fix")) {
         timeout: 60000,
       });
     } catch (e) {
-      errors.push(`Type-check failed:\n${e.stderr?.toString() || e.message}`);
+      const stderr = e.stderr?.toString() || "";
+      const stdout = e.stdout?.toString() || "";
+      errors.push(`Type-check failed:\n${stderr || stdout || e.message}`);
     }
   } else {
     // Fallback: try npx tsc --noEmit directly
     try {
-      execSync("npx tsc --noEmit", { cwd, stdio: "pipe", timeout: 60000 });
+      execSync("npx --no tsc --noEmit", { cwd, stdio: "pipe", timeout: 60000 });
     } catch (e) {
       // Only block if tsc is actually installed (exit code matters)
       const stderr = e.stderr?.toString() || "";
+      const stdout = e.stdout?.toString() || "";
       if (!stderr.includes("not found") && !stderr.includes("ENOENT")) {
-        errors.push(`Type-check failed:\n${stderr || e.message}`);
+        errors.push(`Type-check failed:\n${stderr || stdout || e.message}`);
       }
     }
   }
