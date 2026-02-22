@@ -24,8 +24,8 @@ try {
 
 const { team_name = "", teammate_name = "" } = input;
 
-// Only gate frontend teams
-if (!team_name.includes("frontend")) {
+// Only gate frontend review-fix teams
+if (!team_name.startsWith("frontend-review-fix")) {
   process.exit(0);
 }
 

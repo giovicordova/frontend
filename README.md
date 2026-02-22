@@ -16,7 +16,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
 - For `review-fix` mode: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (pre-configured in `.claude/settings.json`)
-- For `refresh` and reference inspection: Chrome with a DevTools MCP connection
+- For `refresh` and reference inspection: Chrome with a DevTools MCP connection (see [Chrome DevTools MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/chrome-devtools-mcp) for setup)
 
 ## Installation
 

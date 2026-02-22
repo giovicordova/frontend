@@ -69,8 +69,8 @@ This is the parallel audit orchestration mode. It runs in the main context (not 
 
    | File content | Skills to audit |
    |---|---|
-   | Page/route with multiple sections | visual-design, ux-ia, layout-responsive, accessibility, content-microcopy |
-   | Single UI component | visual-design, component-architecture, accessibility |
+   | Page/route with multiple sections | visual-design, ux-ia, layout-responsive, accessibility, content-microcopy, interaction-motion |
+   | Single UI component | visual-design, component-architecture, accessibility, content-microcopy |
    | Form or data entry | forms-data, accessibility, visual-design, layout-responsive |
    | Animation/transition heavy | interaction-motion, accessibility |
    | Navigation/routing component | ux-ia, layout-responsive, accessibility |
@@ -118,11 +118,15 @@ This is the parallel audit orchestration mode. It runs in the main context (not 
 
 **Fallback:** If teams are NOT enabled, announce: "Agent teams not enabled. Running audit-only review with subagents. To enable teams: set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in settings.json env." Then fall through to the regular **review** mode above (subagent auditors, no fixing).
 
-### Step 1: Gather context
+### Step 1: Determine target
+
+Parse the path from `$ARGUMENTS` (e.g., `review-fix src/components/PricingCard.tsx`). If no path given, ask what to review.
+
+### Step 2: Gather context
 
 **Auto-detect (no questions needed):**
 - Stack: read `package.json` + config files to detect framework, CSS approach, component library
-- File listing: all files in the target path from `$ARGUMENTS`
+- File listing: all files in the target path
 - Design context: read `.claude/skills/frontend/taste.md` and summarize observations
 - Test runner: check `package.json` scripts for test/lint/type-check commands
 
@@ -130,11 +134,11 @@ This is the parallel audit orchestration mode. It runs in the main context (not 
 1. **Severity threshold**: "Fix critical issues only, or critical + important?" — Options: "Critical only", "Critical + Important (Recommended)". Default: critical + important. Determines fixer's scope.
 2. **Fix scope constraint** (only if target is broad, e.g. a directory): "Any files the fixer should NOT touch?" — Prevents unintended modifications.
 
-### Step 2: Determine target files and applicable skills
+### Step 3: Determine target files and applicable skills
 
 Same logic as the **review** mode: read the target files, classify them using the skill table, select applicable skill domains.
 
-### Step 3: Write team brief
+### Step 4: Write team brief
 
 Write to `.frontend-specs/{name}-team-brief.md`:
 
@@ -164,7 +168,7 @@ Review and fix {files}. Severity threshold: {critical | critical+important}.
 - Severity threshold: {from QnA}
 ```
 
-### Step 4: Create agent team
+### Step 5: Create agent team
 
 Create an agent team called `frontend-review-fix-{name}` and spawn two teammates with natural language instructions:
 
@@ -184,7 +188,7 @@ Create an agent team called `frontend-review-fix-{name}` and spawn two teammates
 
 **Why 1 auditor, not N?** Teammates are full Claude instances (expensive). One auditor checking all skill domains sequentially is more cost-effective than multiple teammate auditors. Subagents are for cheap parallel fan-out; teams are for closed-loop coordination.
 
-### Step 5: Synthesize
+### Step 6: Synthesize
 
 After all teammates complete (tasks 1-3 done), the lead (main context) writes the final report to `.frontend-specs/{name}-review.md` combining:
 - Audit findings from `.frontend-specs/{name}-audit.md`
@@ -214,6 +218,7 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 - Review files: `.frontend-specs/{name}-review.md`
 - Create the directory if it doesn't exist.
 - Use kebab-case for names derived from task descriptions.
+- **Name derivation for review/review-fix modes:** Use the target's basename without extension for files (e.g., `PricingCard.tsx` → `pricing-card`), directory name for directories (e.g., `src/components/` → `components`), always kebab-case.
 </spec_artifacts>
 
 <quick_reference>

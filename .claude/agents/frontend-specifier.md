@@ -65,7 +65,7 @@ Load only relevant skill files per task. Read them via the Read tool from `.clau
 | Animation/interaction | interaction-motion, accessibility |
 | Design system/tokens | component-architecture, visual-design |
 | Navigation/flow | ux-ia, layout-responsive, accessibility |
-| Content/copy | content-microcopy, ux-ia |
+| Content/copy | content-microcopy, ux-ia, accessibility |
 | Full redesign | ALL skills |
 </skill_selection>
 

@@ -7,6 +7,7 @@
  */
 
 const fs = require("fs");
+const path = require("path");
 
 let input;
 try {
@@ -35,14 +36,22 @@ const frontendExtensions = [
   ".svelte",
   ".css",
   ".scss",
+  ".html",
+  ".astro",
+  ".mdx",
 ];
-const ext = filePath.substring(filePath.lastIndexOf("."));
+const ext = path.extname(filePath);
 if (!frontendExtensions.includes(ext)) {
   process.exit(0);
 }
 
-// For Edit tool, check the new_string content; for Write tool, check content
-const content = toolName === "Edit" ? toolInput.new_string : toolInput.content;
+// Read the full file from disk — PostToolUse runs after the tool executes
+let content;
+try {
+  content = fs.readFileSync(filePath, "utf8");
+} catch {
+  process.exit(0);
+}
 if (!content) {
   process.exit(0);
 }
@@ -62,12 +71,13 @@ if (/outline:\s*none/i.test(content) || /outline:\s*0\b/i.test(content)) {
 }
 
 // Check: <img> without alt attribute (JSX and HTML)
-const imgTagRegex = /<img\b[^>]*>/gi;
+const imgTagRegex = /<(?:img|Image)\b[^>]*>/gi;
 const imgTags = content.match(imgTagRegex) || [];
 for (const tag of imgTags) {
   if (!/\balt\s*[={]/i.test(tag)) {
+    const tagName = tag.match(/<(\w+)/)?.[1] || "img";
     warnings.push(
-      `<img> without alt attribute — screen readers cannot describe this image`
+      `<${tagName}> without alt attribute — screen readers cannot describe this image`
     );
     break; // One warning is enough
   }
@@ -101,17 +111,25 @@ while ((tabMatch = tabIndexRegex.exec(content))) {
 
 // Check: <img> without explicit dimensions (CLS risk)
 for (const tag of imgTags) {
-  const hasWidth = /\b(width|w-)\s*[=:{]/i.test(tag);
-  const hasHeight = /\b(height|h-)\s*[=:{]/i.test(tag);
+  const hasWidth = /\bwidth\s*[=:{]/i.test(tag) || /\bw-[\d[]/.test(tag);
+  const hasHeight = /\bheight\s*[=:{]/i.test(tag) || /\bh-[\d[]/.test(tag);
   const hasAspectRatio = /aspect-ratio/i.test(tag);
   const hasFill = /\bfill\b/i.test(tag); // Next.js Image fill prop
   const hasSize = /\bsize\s*[={]/i.test(tag);
   if (!hasWidth && !hasHeight && !hasAspectRatio && !hasFill && !hasSize) {
+    const tagName = tag.match(/<(\w+)/)?.[1] || "img";
     warnings.push(
-      `<img> without explicit dimensions — causes Cumulative Layout Shift. Add width/height or use aspect-ratio`
+      `<${tagName}> without explicit dimensions — causes Cumulative Layout Shift. Add width/height or use aspect-ratio`
     );
     break;
   }
+}
+
+// Check: aria-hidden="true" on containers with potentially focusable children
+if (/aria-hidden\s*=\s*["'{]?\s*true/i.test(content)) {
+  warnings.push(
+    `aria-hidden="true" detected — if this container has focusable children (links, buttons, inputs), they become inaccessible to screen readers`
+  );
 }
 
 if (warnings.length > 0) {

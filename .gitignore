@@ -1,6 +1,11 @@
 .DS_Store
 .frontend-specs/
 node_modules/
+# SI observer generated reports (improvement-plan.md and state.md are tracked intentionally)
+.claude/project/reports/data-patterns.md
+.claude/project/reports/reasoning.md
+.claude/project/reports/system-observations.md
+# Workspace-only directories — excluded to prevent local work dirs from being committed
 typography/
 ui/
 research/

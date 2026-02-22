@@ -22,16 +22,27 @@ try {
 
 const { task_subject = "", team_name = "", cwd = process.cwd() } = input;
 
-// Only gate frontend teams
-if (!team_name.includes("frontend")) {
+// Only gate frontend review-fix teams
+if (!team_name.startsWith("frontend-review-fix")) {
   process.exit(0);
 }
 
+// Walk up from cwd to find project root (directory containing .claude/)
+function findProjectRoot(startDir) {
+  let dir = startDir;
+  while (dir !== path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, ".claude"))) return dir;
+    dir = path.dirname(dir);
+  }
+  return startDir; // fallback to cwd
+}
+
+const projectRoot = findProjectRoot(cwd);
 const subject = task_subject.toLowerCase();
 
 // --- Audit / Validate tasks: require structured findings file ---
 if (/\baudit\b/.test(subject) || /\bvalidate\b/.test(subject)) {
-  const specsDir = path.join(cwd, ".frontend-specs");
+  const specsDir = path.join(projectRoot, ".frontend-specs");
 
   if (!fs.existsSync(specsDir)) {
     process.stderr.write(
@@ -66,7 +77,7 @@ if (/\bfix\b/.test(subject)) {
   let pkgJson;
   try {
     pkgJson = JSON.parse(
-      fs.readFileSync(path.join(cwd, "package.json"), "utf8")
+      fs.readFileSync(path.join(projectRoot, "package.json"), "utf8")
     );
   } catch {
     // No package.json — can't enforce lint/types, allow completion
@@ -79,7 +90,7 @@ if (/\bfix\b/.test(subject)) {
   // Run lint if available
   if (scripts.lint) {
     try {
-      execSync("npm run lint", { cwd, stdio: "pipe", timeout: 60000 });
+      execSync("npm run lint", { cwd: projectRoot, stdio: "pipe", timeout: 60000 });
     } catch (e) {
       errors.push(`Lint failed:\n${e.stderr?.toString() || e.message}`);
     }
@@ -91,7 +102,7 @@ if (/\bfix\b/.test(subject)) {
   if (tscScript) {
     try {
       execSync(`npm run ${tscScript}`, {
-        cwd,
+        cwd: projectRoot,
         stdio: "pipe",
         timeout: 60000,
       });
@@ -103,7 +114,7 @@ if (/\bfix\b/.test(subject)) {
   } else {
     // Fallback: try npx tsc --noEmit directly
     try {
-      execSync("npx --no tsc --noEmit", { cwd, stdio: "pipe", timeout: 60000 });
+      execSync("npx --no tsc --noEmit", { cwd: projectRoot, stdio: "pipe", timeout: 60000 });
     } catch (e) {
       // Only block if tsc is actually installed (exit code matters)
       const stderr = e.stderr?.toString() || "";
