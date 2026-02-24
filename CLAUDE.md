@@ -27,5 +27,4 @@ All paths in agents, commands, and hooks use `.claude/` (project-relative), not 
 
 ## State
 
-Read `.claude/project/state.md` at the start of every session. It describes what exists and what's next.
-If `.claude/project/vision.md` exists, read it too — the gap between vision and state is the work.
+Read `.claude/project/state.md` at the start of every session. It contains the project vision, what exists, and what's next.
