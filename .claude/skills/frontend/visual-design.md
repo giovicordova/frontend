@@ -5,7 +5,7 @@ domain: frontend
 
 <scope>
 Color theory, typography scale, spacing systems, visual hierarchy, iconography, elevation, and composition.
-Does NOT cover: layout structure/grid (layout-responsive.md), accessibility contrast validation (accessibility.md), component API design (component-architecture.md).
+Does NOT cover: layout structure/grid (layout-responsive.md), accessibility contrast validation (accessibility.md), component API design (component-architecture.md), UX flows/information architecture (ux-ia.md), content/microcopy text (content-microcopy.md).
 </scope>
 
 <principles>

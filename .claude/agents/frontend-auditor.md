@@ -1,6 +1,6 @@
 ---
 name: frontend-auditor
-description: "Read-only frontend auditor. Evaluates code against a single skill domain's checklist. Spawned in parallel by review mode."
+description: "Read-only frontend auditor. Evaluates code against a single skill domain's checklist. Use when reviewing existing frontend code — spawned in parallel by the frontend orchestrator's review mode, not directly."
 tools: Read, Glob, Grep
 model: sonnet
 color: yellow

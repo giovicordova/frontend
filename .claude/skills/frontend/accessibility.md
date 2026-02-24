@@ -5,7 +5,7 @@ domain: frontend
 
 <scope>
 WCAG AAA compliance, keyboard navigation, screen reader support, ARIA patterns, contrast, focus management, motion sensitivity, and reduced-motion preferences.
-Does NOT cover: visual design choices (visual-design.md), form-specific validation UX (forms-data.md).
+Does NOT cover: visual design choices (visual-design.md), form-specific validation UX (forms-data.md), layout structure/grid systems (layout-responsive.md), animation timing/easing (interaction-motion.md).
 </scope>
 
 <principles>
@@ -43,9 +43,9 @@ Does NOT cover: visual design choices (visual-design.md), form-specific validati
 </patterns>
 
 <checklist>
-- Does the spec define heading hierarchy (h1-h6)?
+- Is heading hierarchy (h1-h6) defined and sequential?
 - Are all interactive elements keyboard accessible?
-- Is focus management defined for dynamic content (modals, route changes, insertions)?
+- Is focus management handled for dynamic content (modals, route changes, insertions)?
 - Are contrast ratios specified at AAA level (7:1 / 4.5:1)?
 - Does every color-coded state have a non-color alternative?
 - Are touch targets at least 44x44px?

@@ -5,7 +5,7 @@ domain: frontend
 
 <scope>
 User flows, navigation patterns, information architecture, cognitive load management, progressive disclosure, wayfinding, and content organization.
-Does NOT cover: visual execution of navigation (visual-design.md), specific interaction/animation behavior (interaction-motion.md), microcopy text (content-microcopy.md).
+Does NOT cover: visual execution of navigation (visual-design.md), specific interaction/animation behavior (interaction-motion.md), microcopy text (content-microcopy.md), form-specific validation patterns (forms-data.md).
 </scope>
 
 <principles>

@@ -5,7 +5,7 @@ domain: frontend
 
 <scope>
 Grid systems, flexbox patterns, breakpoint strategy, fluid layouts, container queries, adaptive patterns, and responsive behavior across viewports.
-Does NOT cover: visual styling within layout containers (visual-design.md), accessibility of layout (accessibility.md).
+Does NOT cover: visual styling within layout containers (visual-design.md), accessibility of layout (accessibility.md), animation/transition behavior (interaction-motion.md), component API design (component-architecture.md).
 </scope>
 
 <principles>

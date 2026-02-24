@@ -2,6 +2,7 @@
 name: frontend
 description: "Frontend Design System — routes to spec, implement, review, or refresh agents."
 argument-hint: "[refresh | implement | review | review-fix | task description]"
+allowed-tools: ["Task", "Read", "Glob"]
 ---
 
 <objective>

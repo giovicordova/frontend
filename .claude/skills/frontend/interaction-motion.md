@@ -5,7 +5,7 @@ domain: frontend
 
 <scope>
 Micro-interactions, animation principles, state transitions, gesture handling, loading/skeleton patterns, and feedback animations.
-Does NOT cover: layout transition animations (layout-responsive.md), motion accessibility/reduced-motion (accessibility.md), general UX flow design (ux-ia.md).
+Does NOT cover: layout transition animations (layout-responsive.md), motion accessibility/reduced-motion (accessibility.md — see its `prefers-reduced-motion` principle), general UX flow design (ux-ia.md), component API design (component-architecture.md).
 </scope>
 
 <principles>

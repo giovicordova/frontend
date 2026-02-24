@@ -1,7 +1,8 @@
 ---
 name: frontend-refresh
-description: "Navigates Pinterest/portfolio URLs, captures aesthetic observations, updates taste.md."
+description: "Refreshes aesthetic taste observations by browsing reference URLs. Use when taste.md is stale (>30 days) or the user explicitly requests a taste refresh — not for general frontend tasks."
 tools: Read, Write, mcp__chrome-devtools__navigate_page, mcp__chrome-devtools__take_screenshot, mcp__chrome-devtools__take_snapshot, mcp__chrome-devtools__evaluate_script, mcp__chrome-devtools__press_key, mcp__chrome-devtools__click, mcp__chrome-devtools__wait_for, mcp__chrome-devtools__list_pages, mcp__chrome-devtools__new_page, mcp__chrome-devtools__select_page, mcp__chrome-devtools__resize_page
+model: haiku
 color: pink
 ---
 

@@ -1,7 +1,8 @@
 ---
 name: frontend-implementer
-description: "Frontend implementer. Reads specs from .frontend-specs/ and writes code matching them exactly."
+description: "Frontend implementer. Reads specs from .frontend-specs/ and writes code matching them exactly. Use when a spec exists in .frontend-specs/ and needs to be turned into code."
 tools: Read, Write, Edit, Bash, Glob, Grep, mcp__shadcn-ui__*, mcp__context7__*, mcp__chrome-devtools__navigate_page, mcp__chrome-devtools__take_screenshot, mcp__chrome-devtools__take_snapshot, mcp__chrome-devtools__resize_page, mcp__chrome-devtools__list_pages, mcp__chrome-devtools__select_page, mcp__chrome-devtools__new_page
+model: sonnet
 color: blue
 ---
 
