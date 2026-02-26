@@ -10,7 +10,7 @@ See [README.md](README.md) for architecture, installation, and usage.
 .claude/skills/frontend/*.deep.md     — deep versions (principles + patterns)
 .claude/hooks/frontend-{quality-gate,team-idle-gate,team-task-gate}.cjs
 .claude/commands/frontend.md
-.claude/settings.json
+.claude/settings.json                 — env only; hooks registered in global ~/.claude/settings.json
 .claude/frontend-gaterc.json          — optional quality gate config (per-check enable/severity)
 .frontend-specs/          — gitignored output directory
 .frontend-specs/refs/     — reference captures from /frontend ref
@@ -27,6 +27,8 @@ Skill files are split into two versions:
 ## Editing hooks
 
 Hooks read JSON from stdin and exit 0 (allow) or 2 (block). They fail open on errors.
+
+Hook source files live in `.claude/hooks/` (project repo) but are **symlinked into `~/.claude/hooks/`** and **registered in the global `~/.claude/settings.json`**. This means they fire in any project, not just this repo. The project-level `settings.json` has no hook entries to avoid duplicate execution.
 
 ## Path convention
 

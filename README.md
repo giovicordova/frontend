@@ -25,7 +25,9 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 
 ## Installation
 
-Copy the `.claude/` directory into your project root (or symlink it). The system is self-contained — all paths are project-relative.
+### Per-project (recommended for trying it out)
+
+Copy the `.claude/` directory into your project root:
 
 ```text
 your-project/
@@ -34,6 +36,40 @@ your-project/
   package.json
   ...
 ```
+
+Then add hook entries to your project's `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [{ "matcher": "Write|Edit", "hooks": [{ "type": "command", "command": "node .claude/hooks/frontend-quality-gate.cjs" }] }],
+    "TeammateIdle": [{ "hooks": [{ "type": "command", "command": "node .claude/hooks/frontend-team-idle-gate.cjs" }] }],
+    "TaskCompleted": [{ "hooks": [{ "type": "command", "command": "node .claude/hooks/frontend-team-task-gate.cjs" }] }]
+  }
+}
+```
+
+### Global (available in all projects)
+
+Symlink agents, command, hooks, and skills into `~/.claude/`:
+
+```bash
+FRONTEND_DIR="/path/to/frontend/.claude"
+
+# agents
+for f in frontend-auditor frontend-implementer frontend-refresh frontend-scanner frontend-specifier; do
+  ln -sf "$FRONTEND_DIR/agents/$f.md" ~/.claude/agents/
+done
+
+# command, hooks, skills
+ln -sf "$FRONTEND_DIR/commands/frontend.md" ~/.claude/commands/
+for f in frontend-quality-gate.cjs frontend-team-idle-gate.cjs frontend-team-task-gate.cjs; do
+  ln -sf "$FRONTEND_DIR/hooks/$f" ~/.claude/hooks/
+done
+ln -sf "$FRONTEND_DIR/skills/frontend" ~/.claude/skills/
+```
+
+Then add the same hook entries above to your **global** `~/.claude/settings.json`, using `~/.claude/hooks/` paths instead of `.claude/hooks/`.
 
 Specs, reviews, references, and team artifacts are written to `.frontend-specs/` in your project root. Add it to `.gitignore`.
 
