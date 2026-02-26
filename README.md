@@ -22,7 +22,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 
 Copy the `.claude/` directory into your project root (or symlink it). The system is self-contained — all paths are project-relative.
 
-```
+```text
 your-project/
   .claude/           <-- copy this directory
   src/
@@ -85,3 +85,7 @@ When agent teams are enabled, `review-fix` creates a closed loop:
 4. **Lead** synthesizes the final report
 
 Hooks enforce the loop — the auditor can't complete without structured findings, and the fixer can't complete with failing lint or types.
+
+## License
+
+MIT
