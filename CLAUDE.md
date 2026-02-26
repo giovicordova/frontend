@@ -5,14 +5,16 @@ See [README.md](README.md) for architecture, installation, and usage.
 ## Paths
 
 ```
-.claude/agents/frontend-{specifier,implementer,auditor,refresh}.md
+.claude/agents/frontend-{specifier,implementer,auditor,refresh,scanner}.md
 .claude/skills/frontend/*.md          — checklist-only (scope + checklist)
 .claude/skills/frontend/*.deep.md     — deep versions (principles + patterns)
 .claude/hooks/frontend-{quality-gate,team-idle-gate,team-task-gate}.cjs
 .claude/commands/frontend.md
 .claude/settings.json
+.claude/frontend-gaterc.json          — optional quality gate config (per-check enable/severity)
 .frontend-specs/          — gitignored output directory
 .frontend-specs/refs/     — reference captures from /frontend ref
+.frontend-specs/codebase-profile.md   — scanner output (stack, conventions, tooling)
 ```
 
 ## Editing skills

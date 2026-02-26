@@ -12,6 +12,8 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 | Review | `/frontend review [path]` | Runs parallel auditors against domain checklists, produces a findings report |
 | Review + Fix | `/frontend review-fix [path]` | Same as review, but spawns an agent team that audits, fixes, re-validates, and reports |
 | Lighthouse | `/frontend lighthouse` | Runs headless Lighthouse against your dev server, reports scores, optionally fixes failures automatically |
+| Scan | `/frontend scan` | Profiles the existing codebase — detects framework, CSS, component library, conventions, tooling |
+| Improve | `/frontend improve [path]` | Full brownfield flow: scan + review + lighthouse + triage + incremental fixes |
 | Refresh | `/frontend refresh` | Scrapes Pinterest/portfolio via Chrome DevTools and updates taste observations |
 
 ## Prerequisites
@@ -44,6 +46,7 @@ Specs, reviews, references, and team artifacts are written to `.frontend-specs/`
 | `frontend-specifier` | Discovers intent, reads skill files, produces specs | opus |
 | `frontend-implementer` | Reads specs, detects stack, writes code | default |
 | `frontend-auditor` | Evaluates code against a single skill checklist (read-only) | sonnet |
+| `frontend-scanner` | Profiles existing codebases — stack, conventions, tooling | sonnet |
 | `frontend-refresh` | Navigates reference URLs, captures aesthetic observations | default |
 
 ### Skills (`.claude/skills/frontend/`)
@@ -74,6 +77,21 @@ Domains:
 | `frontend-team-idle-gate.cjs` | `TeammateIdle` | Blocks teammates from idling while tasks remain |
 | `frontend-team-task-gate.cjs` | `TaskCompleted` | Blocks audit completion without findings; blocks fix completion if lint/types fail |
 
+### Quality gate configuration (`.claude/frontend-gaterc.json`)
+
+The quality gate hook supports per-check configuration. Create `.claude/frontend-gaterc.json` to override defaults:
+
+```json
+{
+  "checks": {
+    "outline-none": { "enabled": false },
+    "img-dimensions": { "severity": "block" }
+  }
+}
+```
+
+Only overrides need to be specified — missing keys use defaults (enabled, severity: "warn"). Available check IDs: `outline-none`, `img-alt`, `onclick-role`, `tabindex-positive`, `img-dimensions`, `aria-hidden-container`, `img-loading`, `link-text`, `title-tag`, `font-display-swap`, `document-write`, `render-blocking-script`. Severity levels: `warn` (stderr, exit 0), `block` (stderr, exit 2), `off` (skip).
+
 ### Command (`.claude/commands/frontend.md`)
 
 The `/frontend` slash command. Parses arguments, detects mode, checks taste data, and dispatches to the appropriate agent or team workflow.
@@ -81,6 +99,8 @@ The `/frontend` slash command. Parses arguments, detects mode, checks taste data
 **Taste behavior:** If taste observations are empty, the command suggests running `/frontend refresh` but does not block. If populated, taste data is used silently.
 
 **Dialogue phase (spec mode):** Before dispatching to the specifier, the command asks up to 3 clarifying questions — what you're building, any reference URLs/screenshots, and any constraints. Answers are bundled into the specifier prompt.
+
+**Dynamic model selection (spec mode):** The command classifies task scope (single component vs full page vs design system) and picks sonnet for focused tasks or opus for complex ones. This controls cost without sacrificing quality where it matters.
 
 ## Quick start
 
@@ -90,6 +110,12 @@ The `/frontend` slash command. Parses arguments, detects mode, checks taste data
 
 # inspect a reference site
 /frontend ref https://stripe.com/payments
+
+# profile the codebase
+/frontend scan
+
+# improve existing code (scan + review + lighthouse + fix)
+/frontend improve src/components/
 
 # review existing code against checklists
 /frontend review src/components/

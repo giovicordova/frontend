@@ -1,7 +1,7 @@
 ---
 name: frontend
-description: "Frontend Design System — routes to spec, implement, review, or refresh agents."
-argument-hint: "[refresh | implement | review | review-fix | ref <url> | lighthouse | task description]"
+description: "Frontend Design System — routes to spec, implement, review, scan, improve, or refresh agents."
+argument-hint: "[refresh | implement | review | review-fix | ref <url> | lighthouse | scan | improve [path] | task description]"
 allowed-tools: ["Task", "Read", "Glob", "AskUserQuestion"]
 ---
 
@@ -149,7 +149,32 @@ This is the parallel audit orchestration mode. It runs in the main context (not 
    Brief summary of what's already solid.
    ```
 
-6. Report the review spec file path and a brief summary of findings.
+6. **Triage and fix** — after writing the review file, present findings via AskUserQuestion:
+
+   If zero findings across all severities: skip triage, report "All domains pass." and stop.
+
+   Otherwise, present a summary:
+   ```
+   Found {X} critical, {Y} important, {Z} nice-to-have issues.
+
+   Critical:
+   1. {title} ({file}) — {one-line description}
+   ...
+
+   Important:
+   2. {title} ({file}) — {one-line description}
+   ...
+   ```
+
+   Options:
+   - "Fix Critical + Important now (Recommended)"
+   - "Fix Critical only"
+   - "Show full report only"
+   - (Other — for picking specific issues)
+
+   If user picks a fix option: dispatch selected findings to `frontend-implementer` via Task, grouped by file (fix all issues in one file together). After each batch, briefly report what was fixed.
+
+7. Report the review spec file path and final summary.
 
 ---
 
@@ -309,6 +334,106 @@ After the implementer completes, re-run Lighthouse (Step 3) and report the new s
 
 ---
 
+## Mode: scan
+**Trigger:** `$ARGUMENTS` starts with "scan"
+
+Profiles the existing codebase and writes a structured report.
+
+1. Check if `.frontend-specs/codebase-profile.md` exists:
+   - If it exists and was modified within the last 7 days: ask via AskUserQuestion — "Codebase profile exists from {modification date}. Re-scan or use existing?" Options: "Use existing", "Re-scan (Recommended if stack changed)"
+   - If stale (> 7 days) or missing: proceed to scan
+2. Dispatch via Task tool:
+   - subagent_type: `frontend-scanner`
+   - model: `sonnet`
+   - prompt: "Profile the codebase. Detect framework, CSS approach, component library, design tokens, naming conventions, file structure, testing/tooling config, dev server port, and a11y baseline. Write profile to `.frontend-specs/codebase-profile.md`."
+3. Read `.frontend-specs/codebase-profile.md` after completion and print a brief summary (stack, CSS, component library, dev server status).
+
+---
+
+## Mode: improve
+**Trigger:** `$ARGUMENTS` starts with "improve"
+
+Orchestrates scan + review + lighthouse + triage + fix in one interactive flow. This is the primary brownfield improvement mode.
+
+### Step 1: Determine target
+Parse path from `$ARGUMENTS` (e.g., `improve src/components/PricingCard.tsx`). If no path given, ask via AskUserQuestion: "What file or directory do you want to improve?" Options: (Other — freeform path input).
+
+### Step 2: Ensure codebase profile
+Check for `.frontend-specs/codebase-profile.md`. If missing or older than 7 days:
+- Dispatch Task to `frontend-scanner` (model: sonnet) with prompt: "Profile the codebase. Write to `.frontend-specs/codebase-profile.md`."
+- Wait for completion.
+
+Read the profile for stack context (framework, CSS approach, component library, conventions).
+
+### Step 3: Run parallel review
+Same as review mode steps 2-4:
+1. Read the target files to classify them against the skill table
+2. Launch parallel `frontend-auditor` Tasks per applicable skill (model: sonnet)
+3. Collect and synthesize findings (deduplicate, group by file, order by severity)
+
+Hold findings in context — do not write a review file yet.
+
+### Step 4: Run lighthouse (conditional)
+Read the codebase profile for dev server port information.
+- If a dev server port is detected: dispatch Task to `frontend-scanner` with prompt: "Run `npx lighthouse http://localhost:{PORT}/ --output=json --output-path=.frontend-specs/lighthouse-report.json --chrome-flags='--headless --no-sandbox --disable-dev-shm-usage' --only-categories=performance,accessibility,best-practices,seo --quiet`. Then read the JSON output. Extract category scores and failed audits (score < 1, scoreDisplayMode not 'informative' or 'notApplicable'). Write a summary of findings to `.frontend-specs/lighthouse-findings.md`." Read findings back.
+- If no server detected: note "Lighthouse skipped — no dev server detected. Run `npm run dev` and use `/frontend lighthouse` separately."
+
+### Step 5: Triage
+Combine review + lighthouse findings. Present via AskUserQuestion with priority ranking:
+
+```
+Found {X} critical, {Y} important, {Z} nice-to-have issues.
+{Lighthouse scores if available: Performance X/100, A11y X/100, etc.}
+
+Top issues:
+1. {title} ({file}) — {one-line description}
+2. ...
+```
+
+Options:
+- "Fix all Critical + Important (Recommended)"
+- "Fix Critical only"
+- "Let me pick"
+- "Show report only"
+
+If "Show report only": write combined findings to `.frontend-specs/{name}-improvement.md` and stop.
+
+### Step 6: Incremental fixes
+Dispatch selected findings to `frontend-implementer` via Task, grouped by file (fix all issues in one file together). Use model: sonnet for the implementer.
+
+After each file batch: briefly report what was fixed. Then ask via AskUserQuestion: "Continue with remaining fixes?" Options: "Continue (Recommended)", "Stop here".
+
+### Step 7: Re-validate (if lighthouse was run in Step 4)
+If lighthouse was run: dispatch Task to `frontend-scanner` to re-run lighthouse and report new scores.
+Also dispatch Task to `frontend-scanner` to run lint + type-check if configured (check profile for scripts).
+Report comparison: before vs after scores.
+
+### Step 8: Write improvement report
+Write to `.frontend-specs/{name}-improvement.md` with sections:
+```
+# Improvement Report: {name}
+
+## Profile Summary
+{Stack, CSS, component library from profile}
+
+## Fixed
+{List of findings that were fixed, grouped by file}
+
+## Deferred
+{Findings the user chose not to fix}
+
+## Not Fixable in Code
+{Infrastructure issues, third-party limitations, etc.}
+
+## Validation
+{Lighthouse before/after scores if available}
+{Lint/type-check results if available}
+```
+
+Report the improvement file path and a brief summary.
+
+---
+
 ## Mode: spec (default)
 **Trigger:** Any `$ARGUMENTS` that don't match the above modes, OR no arguments (ask what to build).
 
@@ -333,10 +458,27 @@ Bundle all answers into the prompt sent to the specifier agent.
 
 Also check for reference files in `.frontend-specs/refs/` — if any exist, list them in the prompt so the specifier can use them.
 
+### Model selection
+
+Before dispatching, classify the task scope to select the optimal model:
+
+| Scope | Model | Signal |
+|-------|-------|--------|
+| Single component | sonnet | button, card, modal, form field, nav element |
+| Form / data display | sonnet | form, input pattern, table, data viz |
+| Animation / interaction | sonnet | specific animation or interaction |
+| Full page / feature | opus | page, landing, dashboard, multi-section |
+| Design system | opus | tokens, theme, system-wide patterns |
+| Multi-component feature | opus | 3+ components working together |
+| Redesign | opus | explicitly mentions redesign |
+
+Default to sonnet when uncertain. Use the classified model in the Task tool's `model` parameter.
+
 ### Dispatch
 
 Dispatch via Task tool:
 - subagent_type: `frontend-specifier`
+- model: `{classified model from table above}`
 - prompt: "Create a frontend spec for: {$ARGUMENTS}. {dialogue answers bundled here}. {ref files listed if any}. Write the spec to .frontend-specs/{name}-spec.md. Read taste.md for aesthetic context first."
 
 Report completion and the spec file path.
@@ -347,6 +489,8 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 
 - Spec files: `.frontend-specs/{name}-spec.md`
 - Review files: `.frontend-specs/{name}-review.md`
+- Improvement reports: `.frontend-specs/{name}-improvement.md`
+- Codebase profile: `.frontend-specs/codebase-profile.md`
 - Reference files: `.frontend-specs/refs/{name}.md`
 - Create the directory if it doesn't exist.
 - Use kebab-case for names derived from task descriptions.
@@ -357,7 +501,11 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 - Taste file: `.claude/skills/frontend/taste.md`
 - Skill files (checklist): `.claude/skills/frontend/*.md`
 - Skill files (deep): `.claude/skills/frontend/*.deep.md`
-- Agents: `.claude/agents/frontend-{specifier,implementer,auditor,refresh}.md`
+- Agents: `.claude/agents/frontend-{specifier,implementer,auditor,refresh,scanner}.md`
+- Codebase profile: `.frontend-specs/codebase-profile.md`
+- Scan command: `/frontend scan`
+- Improve command: `/frontend improve [path]`
+- Quality gate config: `.claude/frontend-gaterc.json`
 - Spec output: `.frontend-specs/`
 - Reference captures: `.frontend-specs/refs/`
 - Team briefs: `.frontend-specs/{name}-team-brief.md`

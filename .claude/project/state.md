@@ -1,85 +1,54 @@
-<vision>
-This project is the design taste layer missing from AI-assisted frontend development. Drop it into any project and Claude writes code that looks and feels intentional — specs with real layout thinking, accessibility baked in, visual decisions grounded in curated references. Reviews catch what linters can't: bad hierarchy, clunky interactions, inaccessible patterns. Self-contained skill system, no dependencies, just `.claude/` config.
-</vision>
+# Frontend Design System — State
 
-<state>
-<updated>2026-02-26</updated>
+## Vision
 
-## What exists
+Design taste layer for AI-assisted frontend development. Drop into any project — Claude writes code that looks intentional, specs with real layout thinking, a11y baked in, reviews catch what linters miss. Self-contained, no dependencies, just `.claude/` config.
 
-<codebase>
-Claude Code skill system for frontend design — no application source code. The `.claude/` directory is the product: a `/frontend` command with spec, ref, implement, review, review-fix, and refresh modes.
+## System Inventory
 
-**Agents** (`.claude/agents/`) — 4 agent configs:
-- `frontend-specifier.md` — Discovers intent from caller prompt, reads skills, produces specs (opus). Checks visual references first, then taste.md.
-- `frontend-implementer.md` — Reads specs, detects stack, writes code (sonnet)
-- `frontend-auditor.md` — Evaluates code against a single skill checklist, read-only (sonnet)
-- `frontend-refresh.md` — Navigates Pinterest/portfolio via Chrome DevTools, captures taste observations (haiku)
+### Modes (10)
+| Mode | Trigger | Description |
+|------|---------|-------------|
+| spec | default | Dialogue → classify scope → dispatch specifier (sonnet or opus) |
+| ref | `ref <url>` | Screenshot + extract visual observations |
+| implement | `implement` | Read spec → write code |
+| review | `review [path]` | Parallel auditors → findings report → triage → optional fix |
+| review-fix | `review-fix [path]` | Agent team: auditor + fixer + validation loop |
+| lighthouse | `lighthouse` | Headless Lighthouse → parse → optional fix pass |
+| scan | `scan` | Profile codebase → stack, conventions, tooling report |
+| improve | `improve [path]` | Full brownfield: scan + review + lighthouse + triage + fix |
+| refresh | `refresh` | Scrape Pinterest/portfolio → update taste.md |
+| (ref capture) | — | Internal ref file writing by specifier |
 
-**Skills** (`.claude/skills/frontend/`) — 9 domains, split into checklist + deep files:
-- `taste.md` — Aesthetic observations (single file, no deep variant — needs first `/frontend refresh`)
-- `{domain}.md` — Scope + checklist only (used by auditors, quick spec tasks)
-- `{domain}.deep.md` — Principles + patterns (used by specifier for full pages/redesigns)
-- Domains: visual-design, ux-ia, interaction-motion, layout-responsive, accessibility, component-architecture, forms-data, content-microcopy, performance
-- `performance.md` / `performance.deep.md` — Core Web Vitals, SEO, Best Practices checklist mapped to Lighthouse audit IDs
+### Agents (5)
+| Agent | Model | Role |
+|-------|-------|------|
+| frontend-specifier | opus | Spec producer (or sonnet for simple tasks via dynamic model selection) |
+| frontend-implementer | sonnet | Code writer from specs |
+| frontend-auditor | sonnet | Read-only checklist evaluator |
+| frontend-scanner | sonnet | Codebase profiler |
+| frontend-refresh | default | Taste observation scraper |
 
-**Hooks** (`.claude/hooks/`) — 3 CJS quality gates:
-- `frontend-quality-gate.cjs` — PostToolUse: warns on a11y, performance, and SEO violations in frontend files
-- `frontend-team-idle-gate.cjs` — TeammateIdle: blocks idle while tasks remain
-- `frontend-team-task-gate.cjs` — TaskCompleted: blocks audit without findings, blocks fix with lint/type errors
+### Skills (10 domains)
+taste, visual-design, ux-ia, interaction-motion, layout-responsive, accessibility, component-architecture, forms-data, content-microcopy, performance
 
-**Command** (`.claude/commands/frontend.md`) — Slash command router for all modes (allowed-tools: Task, Read, Glob, AskUserQuestion).
+Each has `{domain}.md` (checklist) and `{domain}.deep.md` (principles + patterns), except taste (single file).
 
-**Project reports** (`.claude/project/reports/`):
-- `directives.md` — Behavioral rules and structure patterns for SI cycles
-</codebase>
+### Hooks (3)
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| frontend-quality-gate.cjs | PostToolUse (Write/Edit) | 12 checks with IDs, configurable via `.claude/frontend-gaterc.json` |
+| frontend-team-idle-gate.cjs | TeammateIdle | Block idle while tasks remain |
+| frontend-team-task-gate.cjs | TaskCompleted | Enforce audit format + lint/type pass |
 
-<structure>
-frontend/
-  .claude/
-    agents/
-      frontend-{specifier,implementer,auditor,refresh}.md
-    commands/
-      frontend.md
-    hooks/
-      frontend-{quality-gate,team-idle-gate,team-task-gate}.cjs
-    skills/frontend/
-      taste.md
-      {visual-design,ux-ia,interaction-motion,layout-responsive,
-       accessibility,component-architecture,forms-data,
-       content-microcopy}.md          — checklist only
-      {visual-design,ux-ia,interaction-motion,layout-responsive,
-       accessibility,component-architecture,forms-data,
-       content-microcopy}.deep.md     — principles + patterns
-    project/
-      state.md
-      reports/directives.md
-    settings.json
-  .frontend-specs/               (gitignored — runtime output)
-  .frontend-specs/refs/          (reference captures)
-  .gitignore
-  CLAUDE.md
-  README.md
-  LICENSE
-</structure>
+### Configuration
+- `.claude/frontend-gaterc.json` — per-check enable/severity overrides for quality gate
+- `.claude/settings.json` — agent teams env, hook bindings
+- `.frontend-specs/codebase-profile.md` — scanner output consumed by specifier, implementer, improve mode
 
-<design>
-- Routing: `/frontend` command parses arguments → dispatches to agents by mode (spec, ref, implement, review, review-fix, refresh)
-- Taste: if taste.md observations empty, suggest refresh but don't block; if populated, use silently
-- Dialogue: spec mode asks up to 3 clarifying questions before dispatching to specifier
-- References: `/frontend ref <url>` captures visual observations to `.frontend-specs/refs/`; specifier checks refs/ before starting
-- Skill split: `{domain}.md` (scope + checklist) for audits and quick tasks; `{domain}.deep.md` (principles + patterns) for full pages and redesigns
-- Review-fix: agent team (auditor + fixer) with closed-loop validation, gated by hooks
-- Hooks: CJS, fail open on errors, use word-boundary regex for task matching, walk up to project root for path resolution
-- All paths project-relative (`.claude/`), never global (`~/.claude/`)
-- Agent teams enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json
-- Lighthouse: `/frontend lighthouse` mode runs headless Lighthouse CLI against dev server, parses JSON output, feeds failures to implementer, re-validates once
-</design>
-
-## What's next
-
-1. **Real-world validation** — Drop the system into an actual frontend project and run `/frontend` end-to-end.
-2. **Taste data** — `taste.md` is empty. Run `/frontend refresh` to populate observations.
-3. **Colour & typography integration** — Adjacent `ui/colors/` and `typography/` work could inform skill checklists.
-
-</state>
+## Key Patterns
+- Specifier uses dynamic model selection: sonnet for components, opus for pages/systems
+- Review mode now includes triage + optional fix dispatch
+- Improve mode orchestrates scan → review → lighthouse → triage → fix → validate
+- Scanner profile is reused by specifier and implementer (skip redundant detection)
+- Quality gate checks have IDs and support warn/block/off severity via gaterc config

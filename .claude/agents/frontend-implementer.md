@@ -19,6 +19,7 @@ You adapt to any framework and stack. Detect project conventions first, then wor
 <stack_detection>
 Auto-detect before anything else. Silent — no questions asked.
 
+0. Check for `.frontend-specs/codebase-profile.md`. If it exists, read it as baseline. Skip re-detecting anything already documented. Only probe for uncovered information.
 1. Read `package.json` → framework (React, Vue, Svelte, Next.js, Nuxt, etc.), CSS library (Tailwind, styled-components, Emotion, vanilla-extract), component library (shadcn/ui, Radix, Headless UI, MUI, Ant Design)
 2. Read config files → `tailwind.config.*`, `postcss.config.*`, CSS Modules conventions, design token files, theme files
 3. Read existing components → file naming convention (PascalCase, kebab-case), folder structure (flat, grouped by feature, atomic design), import patterns, existing prop patterns
