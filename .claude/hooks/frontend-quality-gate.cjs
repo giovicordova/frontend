@@ -133,6 +133,59 @@ if (containerAriaHidden.test(content)) {
   );
 }
 
+// Check: <img> without loading attribute (below-fold lazy loading)
+for (const tag of imgTags) {
+  const hasFill = /\bfill\b/i.test(tag);
+  const hasPriority = /\bpriority\b/i.test(tag); // Next.js Image
+  const hasLoading = /\bloading\s*[={]/i.test(tag);
+  if (!hasFill && !hasPriority && !hasLoading) {
+    warnings.push(
+      `<${tag.match(/<(\w+)/)?.[1] || "img"}> without loading attribute — add loading="lazy" for below-fold images or priority for LCP images`
+    );
+    break;
+  }
+}
+
+// Check: <a> with non-descriptive text
+const anchorRegex =
+  /<a\b[^>]*>\s*(click here|here|read more|learn more|more|link)\s*<\/a>/gi;
+if (anchorRegex.test(content)) {
+  warnings.push(
+    `Non-descriptive link text detected ("click here", "read more", etc.) — use descriptive text for SEO and accessibility`
+  );
+}
+
+// Check: <title> missing in HTML files
+if ((ext === ".html" || ext === ".astro") && !/<title[\s>]/i.test(content)) {
+  warnings.push(
+    `No <title> tag detected in HTML file — required for SEO (Lighthouse Best Practices)`
+  );
+}
+
+// Check: Google Fonts loaded without display=swap
+const gfontsRegex = /fonts\.googleapis\.com\/css/i;
+if (gfontsRegex.test(content) && !/display=swap/i.test(content)) {
+  warnings.push(
+    `Google Fonts loaded without display=swap — causes invisible text during font load (FOIT). Add &display=swap to the URL`
+  );
+}
+
+// Check: document.write usage
+if (/document\.write\s*\(/i.test(content)) {
+  warnings.push(
+    `document.write() detected — blocks HTML parsing and is flagged by Lighthouse Best Practices. Use DOM manipulation instead`
+  );
+}
+
+// Check: render-blocking <script> in <head> without async/defer
+const headScriptRegex =
+  /<script\b(?![^>]*\b(async|defer|type\s*=\s*["']module["'])\b)[^>]*src\s*=/gi;
+if (headScriptRegex.test(content) && /<head\b/i.test(content)) {
+  warnings.push(
+    `Render-blocking <script src> in <head> without async or defer — delays page rendering. Add defer or move before </body>`
+  );
+}
+
 if (warnings.length > 0) {
   const header = `⚠ Frontend Quality Gate (${filePath}):`;
   const body = warnings.map((w) => `  • ${w}`).join("\n");

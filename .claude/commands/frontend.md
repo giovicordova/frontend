@@ -1,7 +1,7 @@
 ---
 name: frontend
 description: "Frontend Design System — routes to spec, implement, review, or refresh agents."
-argument-hint: "[refresh | implement | review | review-fix | ref <url> | task description]"
+argument-hint: "[refresh | implement | review | review-fix | ref <url> | lighthouse | task description]"
 allowed-tools: ["Task", "Read", "Glob", "AskUserQuestion"]
 ---
 
@@ -9,7 +9,7 @@ allowed-tools: ["Task", "Read", "Glob", "AskUserQuestion"]
 Route frontend design tasks to specialized agents. Parse $ARGUMENTS to determine mode and dispatch accordingly.
 
 Skill files live in `.claude/skills/frontend/`:
-taste.md, visual-design.md, ux-ia.md, interaction-motion.md, layout-responsive.md, accessibility.md, component-architecture.md, forms-data.md, content-microcopy.md
+taste.md, visual-design.md, ux-ia.md, interaction-motion.md, layout-responsive.md, accessibility.md, component-architecture.md, forms-data.md, content-microcopy.md, performance.md
 
 Deep skill files (principles + patterns) live alongside as `{domain}.deep.md`. Checklist-only files are the default `{domain}.md`.
 </objective>
@@ -109,8 +109,8 @@ This is the parallel audit orchestration mode. It runs in the main context (not 
 
    | File content | Skills to audit |
    |---|---|
-   | Page/route with multiple sections | visual-design, ux-ia, layout-responsive, accessibility, content-microcopy, interaction-motion |
-   | Single UI component | visual-design, component-architecture, accessibility, content-microcopy, interaction-motion |
+   | Page/route with multiple sections | visual-design, ux-ia, layout-responsive, accessibility, content-microcopy, interaction-motion, performance |
+   | Single UI component | visual-design, component-architecture, accessibility, content-microcopy, interaction-motion, performance |
    | Form or data entry | forms-data, accessibility, visual-design, layout-responsive, content-microcopy |
    | Animation/transition heavy | interaction-motion, accessibility |
    | Navigation/routing component | ux-ia, layout-responsive, accessibility |
@@ -239,6 +239,76 @@ Report the review file path and summary of what was found and fixed.
 
 ---
 
+## Mode: lighthouse
+**Trigger:** `$ARGUMENTS` starts with "lighthouse"
+
+Goal: Run Lighthouse against the project's dev server and feed failures back to the implementer for fixing. Bash-driven, not screenshot-driven. One loop max.
+
+### Step 1: Check prerequisites
+Run via Bash:
+- Check `npx lighthouse --version` — if not available, run `npm install -g lighthouse` and verify
+- Check if a dev server is already running on localhost by testing common ports (3000, 3001, 4000, 4321, 5173, 8080) with: `curl -s -o /dev/null -w "%{http_code}" http://localhost:{PORT}`
+- If no server found, check `package.json` for a `dev` or `start` script, then instruct the user: "No dev server detected. Run `npm run dev` in another terminal, then run `/frontend lighthouse` again." Exit early if no server.
+
+### Step 2: Detect the URL
+- Use the first port that returned 200 from Step 1
+- Parse `$ARGUMENTS` for a path suffix (e.g., `lighthouse /pricing` → test `http://localhost:{PORT}/pricing`)
+- Default to `http://localhost:{PORT}/`
+
+### Step 3: Run Lighthouse
+```bash
+npx lighthouse {URL} \
+  --output=json \
+  --output-path=.frontend-specs/lighthouse-report.json \
+  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+  --only-categories=performance,accessibility,best-practices,seo \
+  --quiet
+```
+
+### Step 4: Parse results
+Read `.frontend-specs/lighthouse-report.json`. Extract:
+- Category scores (performance, accessibility, best-practices, seo) — multiply by 100 for 0-100 scale
+- Failed audits: any audit where `score < 1` and `scoreDisplayMode !== 'informative'` and `scoreDisplayMode !== 'notApplicable'`
+- For each failed audit: extract `id`, `title`, `description`, `score`, and `details.items` (first 3 items max)
+
+### Step 5: Report and decide
+
+If ALL scores are 100:
+- Print: "✓ Lighthouse: 100/100 across Performance, Accessibility, Best Practices, SEO"
+- Done. No fix pass needed.
+
+If any score < 100:
+- Print a summary table:
+  ```
+  Lighthouse Results: {URL}
+  ├─ Performance:     {score}/100
+  ├─ Accessibility:   {score}/100
+  ├─ Best Practices:  {score}/100
+  └─ SEO:             {score}/100
+
+  {N} failed audits
+  ```
+- Write findings to `.frontend-specs/lighthouse-findings.md` in the standard Critical/Important/Nice-to-have format:
+  - Score 0-49 → Critical
+  - Score 50-89 → Important
+  - Score 90-99 → Nice-to-have
+  - Map each failed audit to a finding with: audit title, current score, what it means, and the fix
+- Ask the user (AskUserQuestion): "Lighthouse found {N} issues. Fix them now?" — Options: "Fix all", "Fix Critical + Important only", "Show report only"
+
+### Step 6: Fix pass (if user approved)
+Dispatch via Task tool:
+- subagent_type: `frontend-implementer`
+- prompt: "Fix the Lighthouse failures in `.frontend-specs/lighthouse-findings.md`. Read the findings file, then fix each item in the codebase. Focus on static code fixes (HTML attributes, meta tags, image attributes, font loading, script attributes). Do NOT change visual design or layout. After fixing, report what you changed."
+
+### Step 7: Re-run (if fixes were applied)
+After the implementer completes, re-run Lighthouse (Step 3) and report the new scores. Do this once — do not loop more than twice total.
+
+### Notes on what Lighthouse can and cannot fix statically:
+- **Fixable in code:** Missing meta tags, missing alt text, missing loading attributes, font-display issues, render-blocking scripts, non-descriptive links, missing viewport meta, console errors from bad code, image format/dimension issues
+- **Not fixable in code:** Actual LCP time (depends on server speed), network latency, server response time (TTFB), third-party script performance — note these as "infrastructure" issues in the findings, not code issues
+
+---
+
 ## Mode: spec (default)
 **Trigger:** Any `$ARGUMENTS` that don't match the above modes, OR no arguments (ask what to build).
 
@@ -297,6 +367,10 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 - Portfolio: https://giovannicordova.com/
 - Force refresh: `/frontend refresh`
 - Agent teams env: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
+- Performance skill: `.claude/skills/frontend/performance.md`
+- Lighthouse output: `.frontend-specs/lighthouse-report.json`
+- Lighthouse findings: `.frontend-specs/lighthouse-findings.md`
+- Run audit: `/frontend lighthouse` (requires dev server running)
 - Quality gate: `.claude/hooks/frontend-quality-gate.cjs`
 - Team hooks: `.claude/hooks/frontend-team-{task,idle}-gate.cjs`
 </quick_reference>

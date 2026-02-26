@@ -20,10 +20,11 @@ Claude Code skill system for frontend design — no application source code. The
 - `taste.md` — Aesthetic observations (single file, no deep variant — needs first `/frontend refresh`)
 - `{domain}.md` — Scope + checklist only (used by auditors, quick spec tasks)
 - `{domain}.deep.md` — Principles + patterns (used by specifier for full pages/redesigns)
-- Domains: visual-design, ux-ia, interaction-motion, layout-responsive, accessibility, component-architecture, forms-data, content-microcopy
+- Domains: visual-design, ux-ia, interaction-motion, layout-responsive, accessibility, component-architecture, forms-data, content-microcopy, performance
+- `performance.md` / `performance.deep.md` — Core Web Vitals, SEO, Best Practices checklist mapped to Lighthouse audit IDs
 
 **Hooks** (`.claude/hooks/`) — 3 CJS quality gates:
-- `frontend-quality-gate.cjs` — PostToolUse: warns on a11y/performance violations in frontend files
+- `frontend-quality-gate.cjs` — PostToolUse: warns on a11y, performance, and SEO violations in frontend files
 - `frontend-team-idle-gate.cjs` — TeammateIdle: blocks idle while tasks remain
 - `frontend-team-task-gate.cjs` — TaskCompleted: blocks audit without findings, blocks fix with lint/type errors
 
@@ -72,6 +73,7 @@ frontend/
 - Hooks: CJS, fail open on errors, use word-boundary regex for task matching, walk up to project root for path resolution
 - All paths project-relative (`.claude/`), never global (`~/.claude/`)
 - Agent teams enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json
+- Lighthouse: `/frontend lighthouse` mode runs headless Lighthouse CLI against dev server, parses JSON output, feeds failures to implementer, re-validates once
 </design>
 
 ## What's next

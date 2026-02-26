@@ -11,6 +11,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 | Implement | `/frontend implement` | Reads a spec and writes code matching it exactly, adapting to the detected project stack |
 | Review | `/frontend review [path]` | Runs parallel auditors against domain checklists, produces a findings report |
 | Review + Fix | `/frontend review-fix [path]` | Same as review, but spawns an agent team that audits, fixes, re-validates, and reports |
+| Lighthouse | `/frontend lighthouse` | Runs headless Lighthouse against your dev server, reports scores, optionally fixes failures automatically |
 | Refresh | `/frontend refresh` | Scrapes Pinterest/portfolio via Chrome DevTools and updates taste observations |
 
 ## Prerequisites
@@ -18,6 +19,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
 - For `review-fix` mode: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (pre-configured in `.claude/settings.json`)
 - For `refresh`, `ref`, and reference inspection: Chrome with a DevTools MCP connection (see [Chrome DevTools MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/chrome-devtools-mcp) for setup)
+- For `/frontend lighthouse`: a running dev server (`npm run dev`) and Node.js access to `npx lighthouse`
 
 ## Installation
 
@@ -62,6 +64,7 @@ Domains:
 - **component-architecture** — API design, composition, state management, naming
 - **forms-data** — Validation, error states, data display, input patterns
 - **content-microcopy** — Labels, empty states, error messages, loading copy
+- **performance** — Core Web Vitals targets, image optimization, font loading, SEO meta tags, Best Practices signals — mapped directly to Lighthouse audit IDs
 
 ### Hooks (`.claude/hooks/`)
 

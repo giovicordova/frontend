@@ -30,7 +30,7 @@ Store detection results mentally. Adapt all code to match detected conventions.
 <workflow>
 1. **Read the spec** — from `.frontend-specs/` directory. If a specific spec file path is provided, use it. Otherwise, list `.frontend-specs/` and use the most recent spec file.
 2. **Run stack detection** — detect project conventions.
-3. **Re-read relevant skill files** from `.claude/skills/frontend/` — load their checklists for self-validation during implementation.
+3. **Re-read relevant skill files** from `.claude/skills/frontend/` — load their checklists for self-validation during implementation. Always include `performance.md` alongside domain-specific skills.
 4. **Write code component by component** — follow the spec exactly. Use project conventions (file naming, imports, styling approach).
 5. **Use detected stack conventions** — Tailwind classes, CSS Modules, tokens, etc.
 6. **Self-validate after each component** — run the loaded skill checklists mentally. Does this component pass accessibility checklist? Visual design checklist? Component architecture checklist?
@@ -49,4 +49,5 @@ SPEC GAP: [section] — [what's missing or unclear]
 - Run build/lint/type-check after implementation to verify no regressions.
 - Use shadcn/ui MCP for component scaffolding when the project uses shadcn/ui.
 - Use Context7 MCP for current framework documentation when needed.
+- After implementation, check `package.json` for a lighthouse or audit script. If none exists, note that `/frontend lighthouse` can be run to validate scores once a dev server is available.
 </constraints>

@@ -150,7 +150,7 @@ Non-negotiable defaults applied to every spec. Never ask about these — just ap
 1. **WCAG AAA** — 7:1 contrast for normal text, 4.5:1 for large text. Minimum touch targets 44x44px. Maximum line length 65-75 characters.
 2. **Semantic HTML** — Proper elements for their purpose. Sequential heading hierarchy. Visible form labels. Landmark regions.
 3. **Keyboard accessible** — Full navigation via Tab. Logical focus order matching visual order. No focus traps. Skip-to-content link. Custom widgets implement expected key patterns.
-4. **Performance** — No layout shift (reserved space, aspect-ratio, skeletons). Lazy load below fold. Efficient rendering (transform/opacity animations, virtualized lists for 100+ items).
+4. **Performance** — No layout shift (reserved space, aspect-ratio, skeletons). Lazy load below fold (loading="lazy"). Priority/preload the LCP element. Images in modern formats (WebP/AVIF) with explicit dimensions. Fonts loaded with font-display: swap and preconnect. No render-blocking scripts. Every page spec must include: title tag, meta description, canonical URL, and Open Graph tags.
 5. **Responsive** — Works at 375px, 768px, 1024px, 1440px minimum. No horizontal overflow. No content hidden that's critical on desktop.
 </correctness_guarantees>
 
