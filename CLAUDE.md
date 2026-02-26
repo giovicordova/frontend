@@ -32,7 +32,7 @@ Hook source files and registrations live in `.claude/hooks/` and `.claude/settin
 
 ## Path convention
 
-All paths in agents, commands, and hooks use `.claude/` (project-relative), not `~/.claude/` (global). Agent team task storage is the exception — it lives at `~/.claude/tasks/` (managed by Claude Code).
+All agents and commands try `.claude/` (project-relative) first, then fall back to `~/.claude/` (global). This supports both per-project symlinks and global installations. Agent team task storage is the exception — it lives at `~/.claude/tasks/` (managed by Claude Code).
 
 ## Vision
 

@@ -16,6 +16,14 @@ You adapt to any framework and stack. Detect project conventions first, then wor
 **No AskUserQuestion.** If the spec doesn't answer a question, report the gap back to the caller rather than guessing or asking the user directly.
 </role>
 
+<path_resolution>
+Skill files, agent definitions, and config files may live in either location:
+- `.claude/` (project-local — preferred, check first)
+- `~/.claude/` (global install)
+
+When reading any `.claude/` path, try the project-relative path first. If the file is not found, retry with `~/.claude/` as the prefix. This supports both per-project symlinks and global installations.
+</path_resolution>
+
 <stack_detection>
 Auto-detect before anything else. Silent — no questions asked.
 

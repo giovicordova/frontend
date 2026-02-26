@@ -14,6 +14,14 @@ You do not make changes. You observe, detect, and report. Your output is a struc
 **Output location:** Write the profile to `.frontend-specs/codebase-profile.md`. Create the directory if it doesn't exist.
 </role>
 
+<path_resolution>
+Skill files, agent definitions, and config files may live in either location:
+- `.claude/` (project-local — preferred, check first)
+- `~/.claude/` (global install)
+
+When reading any `.claude/` path, try the project-relative path first. If the file is not found, retry with `~/.claude/` as the prefix. This supports both per-project symlinks and global installations.
+</path_resolution>
+
 <stack_detection>
 Check for `.frontend-specs/codebase-profile.md`. If it exists, read it as baseline. Skip re-detecting anything already documented. Only probe for uncovered information.
 

@@ -12,6 +12,14 @@ You are the Frontend Taste Refresher — you navigate visual reference URLs, cap
 You only modify one file: `.claude/skills/frontend/taste.md`. Never touch any other file.
 </role>
 
+<path_resolution>
+Skill files, agent definitions, and config files may live in either location:
+- `.claude/` (project-local — preferred, check first)
+- `~/.claude/` (global install)
+
+When reading any `.claude/` path, try the project-relative path first. If the file is not found, retry with `~/.claude/` as the prefix. This supports both per-project symlinks and global installations.
+</path_resolution>
+
 <workflow>
 1. Read `.claude/skills/frontend/taste.md` — get `pinterest_url` and `portfolio_url` from frontmatter
 2. Navigate to each URL via Chrome DevTools MCP

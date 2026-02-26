@@ -20,6 +20,14 @@ You adapt to any framework and stack. Detect project conventions first, then wor
 **Output location:** Write specs to `.frontend-specs/{name}-spec.md` in the project root. If no project root is detectable, write to the current working directory under `.frontend-specs/`. Create the directory if it doesn't exist. Use kebab-case for the `{name}` portion derived from the task description.
 </role>
 
+<path_resolution>
+Skill files, agent definitions, and config files may live in either location:
+- `.claude/` (project-local — preferred, check first)
+- `~/.claude/` (global install)
+
+When reading any `.claude/` path, try the project-relative path first. If the file is not found, retry with `~/.claude/` as the prefix. This supports both per-project symlinks and global installations.
+</path_resolution>
+
 <visual_references>
 **Check for visual references first — before reading skill files.**
 

@@ -8,8 +8,9 @@ allowed-tools: ["Task", "Read", "Glob", "AskUserQuestion"]
 <objective>
 Route frontend design tasks to specialized agents. Parse $ARGUMENTS to determine mode and dispatch accordingly.
 
-Skill files live in `.claude/skills/frontend/`:
-taste.md, visual-design.md, ux-ia.md, interaction-motion.md, layout-responsive.md, accessibility.md, component-architecture.md, forms-data.md, content-microcopy.md, performance.md
+Skill files may be at `.claude/skills/frontend/` or `~/.claude/skills/frontend/` depending on install method. Try project-local first, fall back to global.
+
+Available skills: taste.md, visual-design.md, ux-ia.md, interaction-motion.md, layout-responsive.md, accessibility.md, component-architecture.md, forms-data.md, content-microcopy.md, performance.md
 
 Deep skill files (principles + patterns) live alongside as `{domain}.deep.md`. Checklist-only files are the default `{domain}.md`.
 </objective>
@@ -499,26 +500,27 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 </spec_artifacts>
 
 <quick_reference>
+All `.claude/` paths resolve project-local first, then `~/.claude/` (global install).
+
 - Taste file: `.claude/skills/frontend/taste.md`
 - Skill files (checklist): `.claude/skills/frontend/*.md`
 - Skill files (deep): `.claude/skills/frontend/*.deep.md`
 - Agents: `.claude/agents/frontend-{specifier,implementer,auditor,refresh,scanner}.md`
-- Codebase profile: `.frontend-specs/codebase-profile.md`
-- Scan command: `/frontend scan`
-- Improve command: `/frontend improve [path]`
 - Quality gate config: `.claude/frontend-gaterc.json`
+- Quality gate: `.claude/hooks/frontend-quality-gate.cjs`
+- Team hooks: `.claude/hooks/frontend-team-{task,idle}-gate.cjs`
+- Codebase profile: `.frontend-specs/codebase-profile.md`
 - Spec output: `.frontend-specs/`
 - Reference captures: `.frontend-specs/refs/`
 - Team briefs: `.frontend-specs/{name}-team-brief.md`
 - Audit findings: `.frontend-specs/{name}-audit.md`
 - Fix summaries: `.frontend-specs/{name}-fixes.md`
-- Pinterest/Portfolio URLs: see `.claude/skills/frontend/taste.md` frontmatter
-- Force refresh: `/frontend refresh`
-- Agent teams env: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
-- Performance skill: `.claude/skills/frontend/performance.md`
 - Lighthouse output: `.frontend-specs/lighthouse-report.json`
 - Lighthouse findings: `.frontend-specs/lighthouse-findings.md`
+- Pinterest/Portfolio URLs: see taste.md frontmatter
+- Force refresh: `/frontend refresh`
+- Scan command: `/frontend scan`
+- Improve command: `/frontend improve [path]`
 - Run audit: `/frontend lighthouse` (requires dev server running)
-- Quality gate: `.claude/hooks/frontend-quality-gate.cjs`
-- Team hooks: `.claude/hooks/frontend-team-{task,idle}-gate.cjs`
+- Agent teams env: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
 </quick_reference>

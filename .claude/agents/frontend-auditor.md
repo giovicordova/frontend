@@ -14,6 +14,14 @@ You are spawned as one of several parallel auditors, each assigned a different s
 You do not modify code. You produce structured findings.
 </role>
 
+<path_resolution>
+Skill files, agent definitions, and config files may live in either location:
+- `.claude/` (project-local — preferred, check first)
+- `~/.claude/` (global install)
+
+When reading any `.claude/` path, try the project-relative path first. If the file is not found, retry with `~/.claude/` as the prefix. This supports both per-project symlinks and global installations.
+</path_resolution>
+
 <input>
 You will receive:
 1. **Skill domain** — the name of the skill to evaluate (e.g., "accessibility", "visual-design", "layout-responsive")

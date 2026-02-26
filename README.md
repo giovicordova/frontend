@@ -67,7 +67,7 @@ Then add hook entries to your **global** `~/.claude/settings.json`:
 }
 ```
 
-**Caveat:** Agents and commands use project-relative paths like `.claude/skills/frontend/taste.md`. When running from `~/.claude/`, Claude Code's Read tool resolves from the project working directory, not from `~/.claude/`. Path resolution may not work in all Claude Code versions. The per-project symlink approach is more reliable.
+**Note:** Agents and commands try project-relative paths first (`.claude/skills/frontend/...`), then fall back to `~/.claude/` for global installs. The per-project symlink approach is simpler and more reliable if you only use the system in one or two projects.
 
 Specs, reviews, references, and team artifacts are written to `.frontend-specs/` in your project root. Add it to `.gitignore`.
 

@@ -12,6 +12,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
 let input;
 try {
@@ -91,6 +92,14 @@ function findGaterc(startPath) {
     const parent = path.dirname(dir);
     if (parent === dir) break;
     dir = parent;
+  }
+  // Fallback: check global ~/.claude/frontend-gaterc.json
+  try {
+    const globalCandidate = path.join(os.homedir(), ".claude", "frontend-gaterc.json");
+    const raw = fs.readFileSync(globalCandidate, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    // Not found globally either
   }
   return null;
 }
