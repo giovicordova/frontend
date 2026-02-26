@@ -32,6 +32,6 @@ Hooks read JSON from stdin and exit 0 (allow) or 2 (block). They fail open on er
 
 All paths in agents, commands, and hooks use `.claude/` (project-relative), not `~/.claude/` (global). Agent team task storage is the exception — it lives at `~/.claude/tasks/` (managed by Claude Code).
 
-## State
+## Vision
 
-Read `.claude/project/state.md` at the start of every session. It contains the project vision, what exists, and what's next.
+Read `VISION.md` in the project root for the project's core intent.
