@@ -1,8 +1,8 @@
 ---
 name: frontend
 description: "Frontend Design System — routes to spec, implement, review, or refresh agents."
-argument-hint: "[refresh | implement | review | review-fix | task description]"
-allowed-tools: ["Task", "Read", "Glob"]
+argument-hint: "[refresh | implement | review | review-fix | ref <url> | task description]"
+allowed-tools: ["Task", "Read", "Glob", "AskUserQuestion"]
 ---
 
 <objective>
@@ -10,19 +10,18 @@ Route frontend design tasks to specialized agents. Parse $ARGUMENTS to determine
 
 Skill files live in `.claude/skills/frontend/`:
 taste.md, visual-design.md, ux-ia.md, interaction-motion.md, layout-responsive.md, accessibility.md, component-architecture.md, forms-data.md, content-microcopy.md
+
+Deep skill files (principles + patterns) live alongside as `{domain}.deep.md`. Checklist-only files are the default `{domain}.md`.
 </objective>
 
-<staleness_check>
-Before spec/implement/review tasks (NOT before explicit refresh):
+<taste_check>
+Before spec/implement/review tasks (NOT before refresh or ref):
 
-1. Read `last_updated` from `.claude/skills/frontend/taste.md` YAML frontmatter
-2. Get today's date
-3. If `last_updated` is empty, missing, or more than 30 days ago:
-   - Announce: "Design preferences are stale (last updated: {date}). Refreshing from Pinterest first..."
-   - Dispatch `frontend-refresh` agent via Task tool (subagent_type: "frontend-refresh")
-   - Wait for completion before proceeding
-4. If within 30 days: proceed silently
-</staleness_check>
+1. Read `.claude/skills/frontend/taste.md`
+2. Check if the `<taste>` block contains actual observations (not just comments)
+3. If empty: announce "Taste observations are empty — consider running `/frontend refresh` to populate them from your Pinterest and portfolio." Then proceed normally (do not block or force a refresh).
+4. If populated: use silently, no announcement needed.
+</taste_check>
 
 <team_detection>
 Before routing, check if agent teams are available:
@@ -43,6 +42,46 @@ Dispatch via Task tool:
 - prompt: "Refresh taste observations from Pinterest and portfolio URLs."
 
 Report completion when done.
+
+---
+
+## Mode: ref
+**Trigger:** `$ARGUMENTS` starts with "ref" followed by a URL
+
+Extract the URL from `$ARGUMENTS`. Derive a short name from the URL's hostname (e.g., `stripe.com` → `stripe`, `linear.app` → `linear`).
+
+Dispatch via Task tool:
+- subagent_type: `frontend-specifier`
+- prompt: |
+    Reference capture mode. Navigate to {URL} via Chrome DevTools MCP.
+    1. Screenshot at 1440px viewport width (desktop)
+    2. Screenshot at 375px viewport width (mobile)
+    3. Extract visual observations: color palette, typography (faces, scale, weights), spacing rhythm, layout patterns, component patterns, energy/mood
+    4. Write observations to `.frontend-specs/refs/{name}.md` using this format:
+
+    ```
+    # Reference: {name}
+    Source: {URL}
+    Captured: {today's date}
+
+    ## Desktop (1440px)
+    [screenshot observations]
+
+    ## Mobile (375px)
+    [screenshot observations]
+
+    ## Visual Language
+    - **Palette:** [colors observed]
+    - **Typography:** [faces, scale, weights]
+    - **Spacing:** [rhythm, density]
+    - **Layout:** [grid, patterns]
+    - **Components:** [notable patterns]
+    - **Energy:** [calm/bold, minimal/rich, etc.]
+    ```
+
+    Create `.frontend-specs/refs/` directory if it doesn't exist.
+
+Report the ref file path when done.
 
 ---
 
@@ -203,11 +242,32 @@ Report the review file path and summary of what was found and fixed.
 ## Mode: spec (default)
 **Trigger:** Any `$ARGUMENTS` that don't match the above modes, OR no arguments (ask what to build).
 
-If `$ARGUMENTS` is empty or unclear, ask: "What frontend work are you doing?"
+### Dialogue phase
+
+Before dispatching to the specifier, gather context via AskUserQuestion. Skip questions whose answers are already clear from `$ARGUMENTS`.
+
+**Question 1** (skip if `$ARGUMENTS` already describes what to build clearly):
+- "What are you building?"
+- Options: freeform (use "Other" option)
+
+**Question 2:**
+- "Any reference URLs, screenshots, or styles to match?"
+- Options: "No references", "Yes — I'll paste URLs/paths" (use "Other" for input)
+
+**Question 3:**
+- "Any constraints?"
+- Options: "No constraints — start fresh", "Using an existing design system", "Specific brand colors/fonts", "Framework requirements"
+- multiSelect: true
+
+Bundle all answers into the prompt sent to the specifier agent.
+
+Also check for reference files in `.frontend-specs/refs/` — if any exist, list them in the prompt so the specifier can use them.
+
+### Dispatch
 
 Dispatch via Task tool:
 - subagent_type: `frontend-specifier`
-- prompt: "Create a frontend spec for: {$ARGUMENTS}. Write the spec to .frontend-specs/{name}-spec.md. Read taste.md for aesthetic context first."
+- prompt: "Create a frontend spec for: {$ARGUMENTS}. {dialogue answers bundled here}. {ref files listed if any}. Write the spec to .frontend-specs/{name}-spec.md. Read taste.md for aesthetic context first."
 
 Report completion and the spec file path.
 </routing>
@@ -217,6 +277,7 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 
 - Spec files: `.frontend-specs/{name}-spec.md`
 - Review files: `.frontend-specs/{name}-review.md`
+- Reference files: `.frontend-specs/refs/{name}.md`
 - Create the directory if it doesn't exist.
 - Use kebab-case for names derived from task descriptions.
 - **Name derivation for review/review-fix modes:** Use the target's basename without extension for files (e.g., `PricingCard.tsx` → `pricing-card`), directory name for directories (e.g., `src/components/` → `components`), always kebab-case.
@@ -224,15 +285,16 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 
 <quick_reference>
 - Taste file: `.claude/skills/frontend/taste.md`
-- Skill files: `.claude/skills/frontend/*.md`
+- Skill files (checklist): `.claude/skills/frontend/*.md`
+- Skill files (deep): `.claude/skills/frontend/*.deep.md`
 - Agents: `.claude/agents/frontend-{specifier,implementer,auditor,refresh}.md`
 - Spec output: `.frontend-specs/`
+- Reference captures: `.frontend-specs/refs/`
 - Team briefs: `.frontend-specs/{name}-team-brief.md`
 - Audit findings: `.frontend-specs/{name}-audit.md`
 - Fix summaries: `.frontend-specs/{name}-fixes.md`
 - Pinterest: https://nl.pinterest.com/cordovagiova/
 - Portfolio: https://giovannicordova.com/
-- Refresh interval: 30 days
 - Force refresh: `/frontend refresh`
 - Agent teams env: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
 - Quality gate: `.claude/hooks/frontend-quality-gate.cjs`

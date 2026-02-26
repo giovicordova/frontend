@@ -6,7 +6,8 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 
 | Mode | Command | Description |
 |------|---------|-------------|
-| Spec | `/frontend [task]` | Produces an implementation-ready spec with layout, visual design, accessibility, and interaction details |
+| Spec | `/frontend [task]` | Asks clarifying questions, then produces an implementation-ready spec with layout, visual design, accessibility, and interaction details |
+| Ref | `/frontend ref <url>` | Screenshots a reference URL at desktop and mobile, extracts visual observations, saves to `.frontend-specs/refs/` |
 | Implement | `/frontend implement` | Reads a spec and writes code matching it exactly, adapting to the detected project stack |
 | Review | `/frontend review [path]` | Runs parallel auditors against domain checklists, produces a findings report |
 | Review + Fix | `/frontend review-fix [path]` | Same as review, but spawns an agent team that audits, fixes, re-validates, and reports |
@@ -16,7 +17,7 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
 - For `review-fix` mode: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (pre-configured in `.claude/settings.json`)
-- For `refresh` and reference inspection: Chrome with a DevTools MCP connection (see [Chrome DevTools MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/chrome-devtools-mcp) for setup)
+- For `refresh`, `ref`, and reference inspection: Chrome with a DevTools MCP connection (see [Chrome DevTools MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/chrome-devtools-mcp) for setup)
 
 ## Installation
 
@@ -30,7 +31,7 @@ your-project/
   ...
 ```
 
-Specs, reviews, and team artifacts are written to `.frontend-specs/` in your project root. Add it to `.gitignore`.
+Specs, reviews, references, and team artifacts are written to `.frontend-specs/` in your project root. Add it to `.gitignore`.
 
 ## Architecture
 
@@ -38,16 +39,21 @@ Specs, reviews, and team artifacts are written to `.frontend-specs/` in your pro
 
 | Agent | Role | Model |
 |-------|------|-------|
-| `frontend-specifier` | Discovers intent, reads skill files, produces specs | default |
+| `frontend-specifier` | Discovers intent, reads skill files, produces specs | opus |
 | `frontend-implementer` | Reads specs, detects stack, writes code | default |
 | `frontend-auditor` | Evaluates code against a single skill checklist (read-only) | sonnet |
 | `frontend-refresh` | Navigates reference URLs, captures aesthetic observations | default |
 
 ### Skills (`.claude/skills/frontend/`)
 
-Domain checklists that auditors evaluate code against:
+Domain checklists that auditors and specifiers evaluate against. Each skill has two files:
 
-- **taste** — Aesthetic observations from Pinterest/portfolio (auto-refreshed every 30 days)
+- **`{domain}.md`** — Scope + checklist only (used by auditors and for quick spec tasks)
+- **`{domain}.deep.md`** — Principles + patterns (used by specifier for full pages, redesigns, and design systems)
+
+Domains:
+
+- **taste** — Aesthetic observations from Pinterest/portfolio (single file, no deep variant)
 - **visual-design** — Typography, color, hierarchy, elevation, whitespace
 - **ux-ia** — Information architecture, navigation, user flows
 - **interaction-motion** — Transitions, micro-interactions, animation constraints
@@ -67,13 +73,18 @@ Domain checklists that auditors evaluate code against:
 
 ### Command (`.claude/commands/frontend.md`)
 
-The `/frontend` slash command. Parses arguments, detects mode, runs staleness checks on taste data, and dispatches to the appropriate agent or team workflow.
+The `/frontend` slash command. Parses arguments, detects mode, checks taste data, and dispatches to the appropriate agent or team workflow.
+
+**Taste behavior:** If taste observations are empty, the command suggests running `/frontend refresh` but does not block. If populated, taste data is used silently.
+
+**Dialogue phase (spec mode):** Before dispatching to the specifier, the command asks up to 3 clarifying questions — what you're building, any reference URLs/screenshots, and any constraints. Answers are bundled into the specifier prompt.
 
 ## Adding a skill domain
 
-1. Create `.claude/skills/frontend/{domain}.md` with scope, principles, and checklist sections
-2. Add the domain to the classification table in `.claude/commands/frontend.md`
-3. Auditors automatically pick it up when files match the classification
+1. Create `.claude/skills/frontend/{domain}.md` with scope and checklist sections
+2. Create `.claude/skills/frontend/{domain}.deep.md` with principles and patterns sections
+3. Add the domain to the classification table in `.claude/commands/frontend.md`
+4. Auditors automatically pick it up when files match the classification
 
 ## How review-fix teams work
 

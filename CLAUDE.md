@@ -6,16 +6,21 @@ See [README.md](README.md) for architecture, installation, and usage.
 
 ```
 .claude/agents/frontend-{specifier,implementer,auditor,refresh}.md
-.claude/skills/frontend/*.md
+.claude/skills/frontend/*.md          — checklist-only (scope + checklist)
+.claude/skills/frontend/*.deep.md     — deep versions (principles + patterns)
 .claude/hooks/frontend-{quality-gate,team-idle-gate,team-task-gate}.cjs
 .claude/commands/frontend.md
 .claude/settings.json
 .frontend-specs/          — gitignored output directory
+.frontend-specs/refs/     — reference captures from /frontend ref
 ```
 
 ## Editing skills
 
-Skill files are checklists with `<scope>`, `<principles>`, `<patterns>`, and `<checklist>` sections. `taste.md` is special — it stores aesthetic observations refreshed from Pinterest/portfolio via Chrome DevTools.
+Skill files are split into two versions:
+- **`{domain}.md`** — Scope + checklist only. Used by auditors and for quick spec tasks.
+- **`{domain}.deep.md`** — Principles + patterns. Used by the specifier for full pages, redesigns, and design systems.
+- **`taste.md`** is special — single file storing aesthetic observations refreshed from Pinterest/portfolio via Chrome DevTools.
 
 ## Editing hooks
 

@@ -22,7 +22,7 @@ You will receive:
 </input>
 
 <workflow>
-1. Read the assigned skill file from `.claude/skills/frontend/{domain}.md`
+1. Read the assigned skill file from `.claude/skills/frontend/{domain}.md` (the checklist-only version)
 2. Extract the checklist items and evaluation criteria from the skill file
 3. Read each file under review
 4. Evaluate the code against every checklist item from the skill
