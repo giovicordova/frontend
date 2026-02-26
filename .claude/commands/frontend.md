@@ -512,8 +512,7 @@ All specs are written to `.frontend-specs/` in the project root (or current work
 - Team briefs: `.frontend-specs/{name}-team-brief.md`
 - Audit findings: `.frontend-specs/{name}-audit.md`
 - Fix summaries: `.frontend-specs/{name}-fixes.md`
-- Pinterest: https://nl.pinterest.com/cordovagiova/
-- Portfolio: https://giovannicordova.com/
+- Pinterest/Portfolio URLs: see `.claude/skills/frontend/taste.md` frontmatter
 - Force refresh: `/frontend refresh`
 - Agent teams env: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
 - Performance skill: `.claude/skills/frontend/performance.md`
