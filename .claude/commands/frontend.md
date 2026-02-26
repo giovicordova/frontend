@@ -376,7 +376,7 @@ Hold findings in context — do not write a review file yet.
 
 ### Step 4: Run lighthouse (conditional)
 Read the codebase profile for dev server port information.
-- If a dev server port is detected: dispatch Task to `general-purpose` with prompt: "Run `npx lighthouse http://localhost:{PORT}/ --output=json --output-path=.frontend-specs/lighthouse-report.json --chrome-flags='--headless --no-sandbox --disable-dev-shm-usage' --only-categories=performance,accessibility,best-practices,seo --quiet`. Then read the JSON output. Extract category scores and failed audits (score < 1, scoreDisplayMode not 'informative' or 'notApplicable'). Write a summary of findings to `.frontend-specs/lighthouse-findings.md`." Read findings back.
+- If a dev server port is detected: dispatch Task to `frontend-implementer` with prompt: "Run only the specified bash commands. Do not read specs or make design changes. Run `npx lighthouse http://localhost:{PORT}/ --output=json --output-path=.frontend-specs/lighthouse-report.json --chrome-flags='--headless --no-sandbox --disable-dev-shm-usage' --only-categories=performance,accessibility,best-practices,seo --quiet`. Then read the JSON output. Extract category scores and failed audits (score < 1, scoreDisplayMode not 'informative' or 'notApplicable'). Write a summary of findings to `.frontend-specs/lighthouse-findings.md`." Read findings back.
 - If no server detected: note "Lighthouse skipped — no dev server detected. Run `npm run dev` and use `/frontend lighthouse` separately."
 
 ### Step 5: Triage
@@ -405,8 +405,8 @@ Dispatch selected findings to `frontend-implementer` via Task, grouped by file (
 After each file batch: briefly report what was fixed. Then ask via AskUserQuestion: "Continue with remaining fixes?" Options: "Continue (Recommended)", "Stop here".
 
 ### Step 7: Re-validate (if lighthouse was run in Step 4)
-If lighthouse was run: dispatch Task to `general-purpose` with the same lighthouse command from Step 4 to re-run and report new scores.
-Also dispatch Task to `general-purpose` to run lint + type-check commands from the codebase profile's Scripts table (if configured).
+If lighthouse was run: dispatch Task to `frontend-implementer` with the same lighthouse command from Step 4 to re-run and report new scores. Add to the prompt: "Run only the specified bash commands. Do not read specs or make design changes."
+Also dispatch Task to `frontend-implementer` with prompt: "Run only the specified bash commands. Do not read specs or make design changes." to run lint + type-check commands from the codebase profile's Scripts table (if configured).
 Report comparison: before vs after scores.
 
 ### Step 8: Write improvement report

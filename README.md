@@ -25,33 +25,19 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill system for
 
 ## Installation
 
-### Per-project (recommended for trying it out)
+### Per-project (recommended)
 
-Copy the `.claude/` directory into your project root:
+Symlink the entire `.claude/` directory into your project root:
 
-```text
-your-project/
-  .claude/           <-- copy this directory
-  src/
-  package.json
-  ...
+```bash
+ln -s /path/to/frontend/.claude .claude
 ```
 
-Then add hook entries to your project's `.claude/settings.json`:
+This ensures all relative paths (agents reading skill files, hooks, etc.) resolve correctly. The included `.claude/settings.json` has hooks pre-configured — no extra setup needed.
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [{ "matcher": "Write|Edit", "hooks": [{ "type": "command", "command": "node .claude/hooks/frontend-quality-gate.cjs" }] }],
-    "TeammateIdle": [{ "hooks": [{ "type": "command", "command": "node .claude/hooks/frontend-team-idle-gate.cjs" }] }],
-    "TaskCompleted": [{ "hooks": [{ "type": "command", "command": "node .claude/hooks/frontend-team-task-gate.cjs" }] }]
-  }
-}
-```
+### Advanced: Global install
 
-### Global (available in all projects)
-
-Symlink agents, command, hooks, and skills into `~/.claude/`:
+Symlink individual files into `~/.claude/` so the system is available in all projects:
 
 ```bash
 FRONTEND_DIR="/path/to/frontend/.claude"
@@ -69,7 +55,19 @@ done
 ln -sf "$FRONTEND_DIR/skills/frontend" ~/.claude/skills/
 ```
 
-Then add the same hook entries above to your **global** `~/.claude/settings.json`, using `~/.claude/hooks/` paths instead of `.claude/hooks/`.
+Then add hook entries to your **global** `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [{ "matcher": "Write|Edit", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/frontend-quality-gate.cjs" }] }],
+    "TeammateIdle": [{ "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/frontend-team-idle-gate.cjs" }] }],
+    "TaskCompleted": [{ "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/frontend-team-task-gate.cjs" }] }]
+  }
+}
+```
+
+**Caveat:** Agents and commands use project-relative paths like `.claude/skills/frontend/taste.md`. When running from `~/.claude/`, Claude Code's Read tool resolves from the project working directory, not from `~/.claude/`. Path resolution may not work in all Claude Code versions. The per-project symlink approach is more reliable.
 
 Specs, reviews, references, and team artifacts are written to `.frontend-specs/` in your project root. Add it to `.gitignore`.
 

@@ -2,6 +2,7 @@
 name: taste
 domain: frontend
 last_updated:
+# Replace these with your own Pinterest board and portfolio URLs
 pinterest_url: https://nl.pinterest.com/cordovagiova/
 portfolio_url: https://giovannicordova.com/
 ---
