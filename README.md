@@ -82,12 +82,38 @@ The `/frontend` slash command. Parses arguments, detects mode, checks taste data
 
 **Dialogue phase (spec mode):** Before dispatching to the specifier, the command asks up to 3 clarifying questions — what you're building, any reference URLs/screenshots, and any constraints. Answers are bundled into the specifier prompt.
 
-## Adding a skill domain
+## Quick start
+
+```bash
+# generate a spec for a component
+/frontend hero section with email signup
+
+# inspect a reference site
+/frontend ref https://stripe.com/payments
+
+# review existing code against checklists
+/frontend review src/components/
+
+# audit and auto-fix
+/frontend review-fix src/components/
+
+# run Lighthouse audit
+/frontend lighthouse
+```
+
+## Contributing
+
+### Adding a skill domain
 
 1. Create `.claude/skills/frontend/{domain}.md` with scope and checklist sections
 2. Create `.claude/skills/frontend/{domain}.deep.md` with principles and patterns sections
 3. Add the domain to the classification table in `.claude/commands/frontend.md`
 4. Auditors automatically pick it up when files match the classification
+
+### Workflow
+
+- Branch from `main`, one skill domain per PR
+- Conventional commits: `type(scope): description`
 
 ## How review-fix teams work
 
