@@ -14,26 +14,6 @@
           }
         ]
       }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/frontend-team-idle-gate.cjs"
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/frontend-team-task-gate.cjs"
-          }
-        ]
-      }
     ]
   }
 }
