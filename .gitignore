@@ -1,4 +1,6 @@
 .DS_Store
+.claude/state*.json
+.claude/.DS_Store
 .frontend-specs/
 node_modules/
 # SI observer generated reports (improvement-plan.md and state.md are tracked intentionally)
