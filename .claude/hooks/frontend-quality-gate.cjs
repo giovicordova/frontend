@@ -76,6 +76,9 @@ const checkDefaults = {
   "font-display-swap": { enabled: true, severity: "warn" },
   "document-write": { enabled: true, severity: "warn" },
   "render-blocking-script": { enabled: true, severity: "warn" },
+  "hardcoded-color": { enabled: true, severity: "warn" },
+  "hardcoded-font": { enabled: true, severity: "warn" },
+  "hardcoded-radius": { enabled: true, severity: "warn" },
 };
 
 // Walk up from filePath looking for .claude/ directory containing frontend-gaterc.json
@@ -299,6 +302,89 @@ if (isEnabled("render-blocking-script")) {
       message:
         "Render-blocking <script src> in <head> without async or defer — delays page rendering. Add defer or move before </body>",
     });
+  }
+}
+
+// --- Token compliance checks ---
+// Only run when design-tokens.json exists
+
+function findDesignTokens(startPath) {
+  let dir = path.dirname(startPath);
+  for (let i = 0; i < 20; i++) {
+    const candidate = path.join(dir, ".frontend-specs", "design-tokens.json");
+    try {
+      const raw = fs.readFileSync(candidate, "utf8");
+      return JSON.parse(raw);
+    } catch {
+      // Not found — keep walking
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return null;
+}
+
+const tokens = findDesignTokens(filePath);
+
+if (tokens) {
+  // Collect all token hex values for comparison
+  const tokenHexValues = new Set();
+  if (tokens.colors) {
+    for (const color of Object.values(tokens.colors)) {
+      if (color.value) tokenHexValues.add(color.value.toLowerCase());
+    }
+  }
+
+  // Check: hardcoded color hex values in CSS/styled-components
+  if (isEnabled("hardcoded-color")) {
+    // Match hex colors in CSS contexts (not in comments or strings that look like token refs)
+    const hexRegex = /#(?:[0-9a-f]{3}){1,2}\b/gi;
+    const hexMatches = content.match(hexRegex) || [];
+    const unauthorized = hexMatches.filter(
+      (h) => !tokenHexValues.has(h.toLowerCase()) &&
+             // Ignore common non-color hex (e.g., #000, #fff often used as CSS reset)
+             !["#000", "#fff", "#000000", "#ffffff"].includes(h.toLowerCase())
+    );
+    if (unauthorized.length > 0) {
+      const unique = [...new Set(unauthorized.map((h) => h.toLowerCase()))].slice(0, 3);
+      findings.push({
+        id: "hardcoded-color",
+        message: `Hardcoded color(s) not in design tokens: ${unique.join(", ")} — use token references instead`,
+      });
+    }
+  }
+
+  // Check: hardcoded font-family declarations
+  if (isEnabled("hardcoded-font")) {
+    const fontFamilyRegex = /font-family\s*:\s*["']?([^;"'\n}]+)/gi;
+    let fontMatch;
+    while ((fontMatch = fontFamilyRegex.exec(content))) {
+      const value = fontMatch[1].trim();
+      // Skip CSS variable references and inherit/initial
+      if (value.startsWith("var(") || /^(inherit|initial|unset)$/i.test(value)) continue;
+      findings.push({
+        id: "hardcoded-font",
+        message: `Hardcoded font-family: "${value}" — use a token reference instead`,
+      });
+      break;
+    }
+  }
+
+  // Check: hardcoded border-radius values
+  if (isEnabled("hardcoded-radius")) {
+    const radiusRegex = /border-radius\s*:\s*(\d+(?:px|rem|em))/gi;
+    let radiusMatch;
+    while ((radiusMatch = radiusRegex.exec(content))) {
+      const value = radiusMatch[1];
+      // Skip CSS variable references
+      if (radiusMatch[0].includes("var(")) continue;
+      findings.push({
+        id: "hardcoded-radius",
+        message: `Hardcoded border-radius: ${value} — use a token reference instead`,
+      });
+      break;
+    }
   }
 }
 
