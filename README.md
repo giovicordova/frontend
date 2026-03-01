@@ -55,51 +55,25 @@ Preview your tokens by opening `.frontend-specs/brand-preview.html` in a browser
 
 ## Installation
 
-### Per-project (recommended)
+```bash
+git clone <repo-url>
+cd frontend
+./install.sh
+```
 
-Symlink the `.claude/` directory into your project root:
+Copies skills, agents, commands, and hooks into `~/.claude/`. Idempotent — run again after `git pull` to update.
+
+To remove:
 
 ```bash
-ln -s /path/to/frontend/.claude .claude
+./uninstall.sh
 ```
 
-The included `.claude/settings.json` has hooks pre-configured.
-
-### Global install
-
-Symlink individual files into `~/.claude/`:
-
-```bash
-FRONTEND_DIR="/path/to/frontend/.claude"
-
-# agents
-for f in frontend-designer frontend-builder frontend-reviewer; do
-  ln -sf "$FRONTEND_DIR/agents/$f.md" ~/.claude/agents/
-done
-
-# command, hooks, skills
-ln -sf "$FRONTEND_DIR/commands/frontend.md" ~/.claude/commands/
-ln -sf "$FRONTEND_DIR/hooks/frontend-quality-gate.cjs" ~/.claude/hooks/
-ln -sf "$FRONTEND_DIR/skills/frontend" ~/.claude/skills/
-```
-
-Then add the hook entry to your global `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [{ "matcher": "Write|Edit", "hooks": [{ "type": "command", "command": "node ~/.claude/hooks/frontend-quality-gate.cjs" }] }]
-  }
-}
-```
-
-Agents and commands try project-relative paths first, then fall back to `~/.claude/`.
-
-Specs, tokens, reviews, and references are written to `.frontend-specs/` in your project root. Add it to `.gitignore`.
+Per-project `.frontend-specs/` directories are left untouched.
 
 ## Architecture
 
-### Agents (`.claude/agents/`)
+### Agents (`agents/`)
 
 | Agent | Role | Model |
 |-------|------|-------|
@@ -107,7 +81,7 @@ Specs, tokens, reviews, and references are written to `.frontend-specs/` in your
 | `frontend-builder` | The doer — reads specs + tokens, writes code, runs lint/type-check | sonnet |
 | `frontend-reviewer` | The critic — evaluates code against skill checklists and token compliance | sonnet |
 
-### Skills (`.claude/skills/frontend/`)
+### Skills (`skills/frontend/`)
 
 Each skill file has a checklist section (for quick audits) and a deep section (for full specs), in one file:
 
@@ -116,7 +90,7 @@ Each skill file has a checklist section (for quick audits) and a deep section (f
 - **build.md** — Component API, composition, tokens, state management, Core Web Vitals, image optimization, font loading, SEO
 - **taste.md** — Aesthetic observations from Pinterest/portfolio (refreshed via Chrome DevTools)
 
-### Hook (`.claude/hooks/`)
+### Hook (`hooks/`)
 
 | Hook | Trigger | Behavior |
 |------|---------|----------|
@@ -128,7 +102,7 @@ Configure per-check behavior in `.claude/frontend-gaterc.json`.
 
 ### Editing skills
 
-Skills live in `.claude/skills/frontend/`. Each file has two sections separated by `--- deep ---`:
+Skills live in `skills/frontend/`. Each file has two sections separated by `--- deep ---`:
 - Top section: scope + checklist (used by reviewers)
 - Bottom section: principles + patterns (used by designer for complex tasks)
 
