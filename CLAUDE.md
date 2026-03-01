@@ -5,13 +5,14 @@ See [README.md](README.md) for architecture, installation, and usage.
 ## Paths
 
 ```
-.claude/agents/frontend-{designer,builder,reviewer}.md
-.claude/skills/frontend/*.md          — design.md, experience.md, build.md, taste.md
-.claude/hooks/frontend-quality-gate.cjs
-.claude/commands/frontend.md
-.claude/settings.json                 — env + hooks
+skills/frontend/*.md                  — design.md, experience.md, build.md, taste.md
+agents/frontend-{designer,builder,reviewer}.md
+commands/frontend.md
+hooks/frontend-quality-gate.cjs
+install.sh / uninstall.sh             — global plugin management
+.claude/settings.json                 — project-level env + hooks
 .claude/frontend-gaterc.json          — optional quality gate config
-.frontend-specs/                      — gitignored output directory
+.frontend-specs/                      — gitignored per-project output directory
 .frontend-specs/design-tokens.json    — per-project visual identity source of truth
 .frontend-specs/brand-preview.html    — browser-viewable brand board
 .frontend-specs/refs/                 — reference captures from /frontend ref
